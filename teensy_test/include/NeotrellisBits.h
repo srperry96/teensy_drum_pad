@@ -1,5 +1,5 @@
-#ifndef __NEOTRELLIS_H__
-#define __NEOTRELLIS_H__
+#ifndef __NEOTRELLISBITS_H__
+#define __NEOTRELLISBITS_H__
 
 #include <Arduino.h>
 #include "Adafruit_NeoTrellis.h"

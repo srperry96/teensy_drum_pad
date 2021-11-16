@@ -1,4 +1,4 @@
-#include <Neotrellis.h>
+#include <NeotrellisBits.h>
 
 Adafruit_NeoTrellis trellis;
 

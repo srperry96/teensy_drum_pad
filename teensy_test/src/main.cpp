@@ -1,6 +1,8 @@
 #include <Arduino.h>
-#include "Neotrellis.h"
+#include "NeotrellisBits.h"
 #include "AudioBits.h"
+
+
 
 void setup() {
   Serial.begin(9600);
