@@ -1,74 +1,56 @@
 #include "AudioBits.h"
 
-// Create the Audio components.  These should be created in the
-// order data flows, inputs/sources -> processing -> outputs
-//
-AudioPlayMemory    sound0;
-AudioPlayMemory    sound1;  // six memory players, so we can play
-AudioPlayMemory    sound2;  // all six sounds simultaneously
-AudioPlayMemory    sound3;
-AudioPlayMemory    sound4;
-// AudioPlayMemory    sound5;
-AudioMixer4        mix1;    // two 4-channel mixers are needed in
-AudioMixer4        mix2;    // tandem to combine 6 audio sources
+//Mixers to take in wav file signals
+AudioMixer4        mix1;
+AudioMixer4        mix2;
 
-// AudioMixer4 mix3;
-// AudioMixer4 mix4;
+//output mixer
+AudioMixer4        mix_out;
 
 
+//Output to headphone jack on teensy audio board
 AudioOutputI2S     headphones;
-// AudioOutputAnalog  dac;     // play to both I2S audio board and on-chip DAC
 
+//Setup wav players (max 3 to avoid parallel SD card read audio glitches)
 AudioPlaySdWav playWav1;
+AudioPlaySdWav playWav2;
+AudioPlaySdWav playWav3;
 
-// Create Audio connections between the components
+//wav player connections
+AudioConnection wav1_left(playWav1, 0, mix1, 0);
+AudioConnection wav1_right(playWav1, 1, mix1, 1);
 
-AudioConnection c1(sound0, 0, mix1, 0);
-AudioConnection c2(sound1, 0, mix1, 1);
-AudioConnection c3(sound2, 0, mix1, 2);
-AudioConnection c4(sound3, 0, mix1, 3);
-AudioConnection c5(mix1, 0, mix2, 0);   // output of mix1 into 1st input on mix2
+AudioConnection wav2_left(playWav2, 0, mix1, 2);
+AudioConnection wav2_right(playWav2, 1, mix1, 3);
 
-AudioConnection c6(sound4, 0, mix2, 1);
-// // AudioConnection c7(sound5, 0, mix2, 2);
-AudioConnection c8(mix2, 0, headphones, 0);
-AudioConnection c9(mix2, 0, headphones, 1);
-// // AudioConnection c10(mix2, 0, dac, 0);
+AudioConnection wav3_left(playWav3, 0, mix2, 0);
+AudioConnection wav3_right(playWav3, 1, mix2, 1);
 
-AudioConnection c7(playWav1, 0, mix2, 2);
-// AudioConnection c10(playWav1, 1, mix2, 2);
+//output mixer connections
+AudioConnection mix1_left_to_out(mix1, 0, mix_out, 0);
+AudioConnection mix1_right_to_out(mix1, 1, mix_out, 1);
 
-//Attempting to do some SD card stuff here
-// AudioConnection patch1(playSdWav1, 0, mix1, 0);
-// AudioConnection patch2(mix1, 0, headphones, 0);
-// AudioConnection patch3(mix1, 0, headphones, 1);
+AudioConnection mix2_left_to_out(mix2, 0, mix_out, 2);
+AudioConnection mix2_right_to_out(mix2, 1, mix_out, 3);
+
+
+AudioConnection output_left(mix_out, 0, headphones, 0);
+AudioConnection output_right(mix_out, 0, headphones, 1);
+
 
 // Create an object to control the audio shield.
 AudioControlSGTL5000 audioShield;
 
 
 void setup_audio_bits() {
-  // Configure the pushbutton pins for pullups.
-  // Each button should connect from the pin to GND.
-  // pinMode(0, INPUT_PULLUP);
-  // pinMode(1, INPUT_PULLUP);
-  // pinMode(2, INPUT_PULLUP);
-  // pinMode(3, INPUT_PULLUP);
-  // pinMode(4, INPUT_PULLUP);
-  // pinMode(5, INPUT_PULLUP);
 
   // Audio connections require memory to work.  For more
   // detailed information, see the MemoryAndCpuUsage example
-  AudioMemory(10);
+  AudioMemory(12);
 
   // turn on the output
   audioShield.enable();
   audioShield.volume(0.5);
-
-  // by default the Teensy 3.1 DAC uses 3.3Vp-p output
-  // if your 3.3V power has noise, switching to the
-  // internal 1.2V reference can give you a clean signal
-  //dac.analogReference(INTERNAL);
 
   // reduce the gain on mixer channels, so more than 1
   // sound can play simultaneously without clipping
@@ -76,6 +58,8 @@ void setup_audio_bits() {
   mix1.gain(1, 0.4);
   mix1.gain(2, 0.4);
   mix1.gain(3, 0.4);
+
+  mix2.gain(0, 0.4);
   mix2.gain(1, 0.4);
   mix2.gain(2, 0.4);
   mix2.gain(3, 0.4);
@@ -96,44 +80,39 @@ void setup_audio_bits() {
 
 void sample_switch(int pad_num) {
   switch(pad_num){
-    case 0 : sound0.play(AudioSampleSnare);
-             Serial.println("play 0");
+    case 0:   playFile("claps/CH1_Clap_09.wav");
               break;
-    case 1 : sound1.play(AudioSampleTomtom);
-             Serial.println("play 1");
+    case 1:   playFile("claps/CH1_Clap_18.wav");
               break;
-    case 2 : sound2.play(AudioSampleHihat);
-             Serial.println("play 2");
+    case 2:   playFile("claps/clap.wav");
               break;
-    case 3 : sound3.play(AudioSampleKick);
-             Serial.println("play 3");
+    case 3:   playFile("hats/muzikhat.wav");
               break;
-    case 4 : sound4.play(AudioSampleAshyknee_kick);//AudioSampleCashregister);
-             Serial.println("play 4");
-             break;
-    case 5 : playFile("kicks/kick2.wav");
-             break;
-    case 6 : playFile("kicks/FriedChicken.wav");
-             break;
-    case 7 : playFile("kicks/Boom_Bap_Kick_97.wav");
-             break;
-    case 8 : playFile("claps/clap1.wav");
-             break;
-    case 9 : playFile("snares/808_SNARE_20.wav");
-             break;
-    case 10 : playFile("snares/808_SNARE_13.wav");
-             break;
-    case 11 : playFile("snares/808_SNARE_12.wav");
-             break;
-    case 12 : playFile("hats/closedhat1.wav");
-             break;
-    case 13 : playFile("hats/CH1.wav");
-             break;
-    case 14 : playFile("openhats/openhat1.wav");
-             break;
-    case 15 : playFile("openhats/HHOPEN808.wav");
-             break;
-    default : Serial.print("Hit the default case in switch statement. Number was: ");
+    case 4:   playFile("kicks/drebd_009.wav");
+              break;
+    case 5:   playFile("kicks/kick2.wav");
+              break;
+    case 6:   playFile("kicks/friedchicken.wav");
+              break;
+    case 7:   playFile("kicks/boombapkick97.wav");
+              break;
+    case 8:   playFile("claps/clap1.wav");
+              break;
+    case 9:   playFile("kicks/kick3.wav");
+              break;
+    case 10:  playFile("snares/snare.wav");
+              break;
+    case 11:  playFile("snares/incredibly overused snare.wav");
+              break;
+    case 12:  playFile("snares/06.wav");
+              break;
+    case 13:  playFile("hats/hat2.wav");
+              break;
+    case 14:  playFile("openhats/openhat1.wav");
+              break;
+    case 15:  playFile("snares/snare1.wav");
+              break;
+    default:  Serial.print("Hit the default case in switch statement. Number was: ");
               Serial.println(pad_num);
               break;
   }
@@ -144,20 +123,15 @@ void playFile(const char *filename){
   Serial.print("Playing file: ");
   Serial.println(filename);
 
-  // Start playing the file.  This sketch continues to
-  // run while the file plays.
-  playWav1.play(filename);
+  //Check for a free wav player to play the sound. Use playWav3 if all are busy
+  if(!playWav1.isPlaying()){
+    playWav1.play(filename);
+  }else if(!playWav2.isPlaying()){
+    playWav2.play(filename);
+  }else{
+    playWav3.play(filename);
+  }
 
-  // A brief delay for the library read WAV info
+  // A brief delay for the library to read WAV info
   delay(25);
-
-  // Simply wait for the file to finish playing.
-  /////COMMENTED THIS WHILE LOOP OUT AS IT BLOCKS THE REST OF THE LOOP FROM RUNNING
-  // while (playWav1.isPlaying()) {
-    // uncomment these lines if you audio shield
-    // has the optional volume pot soldered
-    //float vol = analogRead(15);
-    //vol = vol / 1024;
-    // sgtl5000_1.volume(vol);
-  // }
 }
