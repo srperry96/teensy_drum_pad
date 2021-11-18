@@ -2,14 +2,17 @@
 #define __AUDIOBITS_H__
 
 #include <Audio.h>
+#include "SDCardBits.h"
+#include "Metronome.h"
 
 void setup_audio_bits();
 
-void sample_switch(int pad_num);
+void play_pad_sample(int pad_num);
 
-void playFile(const char *filename);
+void play_file(const char *filename);
 
+void update_pad_sample_filepaths();
 
-extern String filepath_array[16];
+void play_metronome();
 
 #endif

@@ -16,6 +16,8 @@ AudioPlaySdWav playWav1;
 AudioPlaySdWav playWav2;
 AudioPlaySdWav playWav3;
 
+AudioPlayMemory metronome_click;
+
 
 //wav player connections
 AudioConnection wav1_left(playWav1, 0, mix1, 0);
@@ -31,6 +33,9 @@ AudioConnection wav3_right(playWav3, 1, mix2, 1);
 //THIS COULD BE USED FOR A METRONOME OR SOMETHING ELSE DOWN THE LINE??
 // AudioConnection wav4_left(playWav4, 0, mix2, 2);
 // AudioConnection wav4_right(playWav4, 1, mix2, 3);
+AudioConnection metronome_patch(metronome_click, 0, mix2, 2);
+//ONE MORE EMPTY SLOT NOW WE HAVE THE METRONOME
+
 
 //output mixer connections
 AudioConnection mix1_left_to_out(mix1, 0, mix_out, 0);
@@ -46,13 +51,6 @@ AudioConnection output_right(mix_out, 0, headphones, 1);
 
 // Create an object to control the audio shield.
 AudioControlSGTL5000 audioShield;
-
-
-String filepath_array[16] = { "claps/CH1_Clap_09.wav",  "claps/CH1_Clap_18.wav", "claps/clap.wav",          "hats/muzikhat.wav",
-                              "kicks/drebd_009.wav",    "kicks/kick2.wav",       "kicks/friedchicken.wav",  "kicks/boombapkick97.wav",
-                              "claps/clap1.wav",        "kicks/kick3.wav",       "snares/snare.wav",        "snares/incredibly overused snare.wav",
-                              "snares/06.wav",          "hats/hat2.wav",         "openhats/openhat1.wav",   "snares/snare1.wav"
-                            };
 
 
 void setup_audio_bits() {
@@ -77,23 +75,23 @@ void setup_audio_bits() {
   mix2.gain(2, 0.4);
   mix2.gain(3, 0.4);
 
-  Serial.println("Audio bits setup");
+  Serial.println("Setup Audio");
 }
 
 
-void sample_switch(int pad_num) {
+void play_pad_sample(int pad_num) {
 
   if((pad_num < 0) || (pad_num > 15)){
     Serial.print("Pad number out of range: ");
     Serial.println(pad_num);
     return;
   }else{
-    playFile(filepath_array[pad_num].c_str());
+    play_file(pad_sample_paths[pad_num].c_str());
   }
 }
 
 
-void playFile(const char *filename){
+void play_file(const char *filename){
   // Serial.print("Playing file: ");
   // Serial.println(filename);
 
@@ -108,4 +106,8 @@ void playFile(const char *filename){
 
   // A brief delay for the library to read WAV info
   delay(25);
+}
+
+void play_metronome(){
+  metronome_click.play(AudioSampleMetronome_click);
 }

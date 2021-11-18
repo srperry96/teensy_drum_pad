@@ -23,6 +23,8 @@ void setup_sd_card();
 //Load in filepaths for all the samples
 void load_sample_filepaths();
 
+void set_default_sample_filepaths();
+
 
 //Arrays to store sample filepaths
 extern String kick_paths[MAX_SAMPLES_PER_TYPE];
@@ -30,6 +32,8 @@ extern String snare_paths[MAX_SAMPLES_PER_TYPE];
 extern String hat_paths[MAX_SAMPLES_PER_TYPE];
 extern String openhat_paths[MAX_SAMPLES_PER_TYPE];
 extern String clap_paths[MAX_SAMPLES_PER_TYPE];
+
+extern String pad_sample_paths[16];
 
 //numbers of each type of sample
 extern uint8_t num_kicks, num_snares, num_hats, num_openhats, num_claps;

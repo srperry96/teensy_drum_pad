@@ -3,85 +3,63 @@
 #include "AudioBits.h"
 #include "SDCardBits.h"
 
-// #include <SD.h>
-// #include <SPI.h>
-
-
-// File root;
-
-// //List all files - code from teensy SD library here: https://github.com/PaulStoffregen/SD/blob/master/examples/listfiles/listfiles.ino
-// void printDirectory(File dir, int numTabs) {
-//    while(true) {
-     
-//      File entry =  dir.openNextFile();
-
-//      //if there are no more files, break out of the loop
-//      if (! entry) {
-//        break;
-//      }
-//      for (uint8_t i=0; i<numTabs; i++) {
-//        Serial.print('\t');
-//      }
-//      Serial.print(entry.name());
-//      if (entry.isDirectory()) {
-//        Serial.println("/");
-//        printDirectory(entry, numTabs+1);
-//      } else {
-//        // files have sizes, directories do not
-//        Serial.print("\t\t");
-//        Serial.println(entry.size(), DEC);
-//      }
-//      entry.close();
-//    }
-// }
-
+#define MILLIS_PER_MIN 60000
 
 unsigned long start_millis, current_millis;
 const uint8_t neotrellis_period = 20; //neotrellis has a resolution of around 60hz
 
-
+unsigned long start_tempo_millis, current_tempo_millis;
 
 void setup() {
-  Serial.begin(9600);
+    Serial.begin(9600);
+  
+    //Setup hardware
+    setup_neotrellis();
+    setup_audio_bits();
+    setup_sd_card();
 
-  //Setup neotrellis
-  if(!setup_neotrellis()){
-    Serial.println("Couldnt set up neotrellis");
-    while(1);
-  }
+    //Load sample filepaths from SD, and assign them to the Neotrellis pads
+    load_sample_filepaths();
 
-  //Setup audio (includes SD card)
-  setup_audio_bits();
-
-  setup_sd_card();
-
-  load_sample_filepaths();
-
-  start_millis = millis();
+    //get start millis for timing, instead of just using delays
+    start_millis = millis();
+    start_tempo_millis = millis();
 }
 
-uint8_t count;
+uint8_t btn_count = 0;
 
+uint8_t metronome_tempo = 100;
+uint8_t metronome_period = MILLIS_PER_MIN / metronome_tempo;
+bool metronome_on = false;
 
 
 void loop() {
+    current_millis = millis();
+
+    current_tempo_millis = current_millis;
   
-  //millis for timing, instead of delays which might interfere with eachother
-  current_millis = millis();
-  
-  //Read neotrellis if enough time has passed since last read
-  if(current_millis - start_millis > neotrellis_period){
-    trellis.read();
-    start_millis = current_millis;
-  
-    //
-    for(count = 0; count < 16; count++){
-      if(button_states[count] == 1){
-        sample_switch(count);
-        //reset the button state so we dont double play the sample
-        button_states[count] = 0;
+    if(metronome_on){
+      if(current_tempo_millis - start_tempo_millis > metronome_period){
+        play_metronome();
+        start_tempo_millis = current_tempo_millis;
       }
     }
-  }
 
+
+
+    //Read neotrellis at the specified rate
+    if(current_millis - start_millis > neotrellis_period){
+        trellis.read();
+    
+        //check pad states, play corresponding sample if needed
+        for(btn_count = 0; btn_count < 16; btn_count++){
+          if(button_states[btn_count] == 1){
+            play_pad_sample(btn_count);
+
+            //reset the button state so we dont double play the sample
+            button_states[btn_count] = 0;
+          }
+        }
+        start_millis = current_millis;
+    }
 }

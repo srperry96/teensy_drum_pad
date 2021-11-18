@@ -47,9 +47,10 @@ TrellisCallback blink(keyEvent evt){
 }
 
 
-bool setup_neotrellis() {
+void setup_neotrellis() {
   if(!trellis.begin()){
-      return false;
+    Serial.println("Couldnt set up neotrellis");
+    while(1);
   }
 
   //activate all keys and set callbacks
@@ -58,6 +59,8 @@ bool setup_neotrellis() {
     trellis.activateKey(i, SEESAW_KEYPAD_EDGE_FALLING);
     trellis.registerCallback(i, blink);
   }
+
+  Serial.println("Setup Neotrellis");
 
   //do a little animation to show we're on
   //turn pixels on one by one
@@ -72,6 +75,4 @@ bool setup_neotrellis() {
     trellis.pixels.show();
     delay(30);
   }
-
-    return true;
 }
