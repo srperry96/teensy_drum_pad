@@ -16,6 +16,7 @@ AudioPlaySdWav playWav1;
 AudioPlaySdWav playWav2;
 AudioPlaySdWav playWav3;
 
+
 //wav player connections
 AudioConnection wav1_left(playWav1, 0, mix1, 0);
 AudioConnection wav1_right(playWav1, 1, mix1, 1);
@@ -25,6 +26,11 @@ AudioConnection wav2_right(playWav2, 1, mix1, 3);
 
 AudioConnection wav3_left(playWav3, 0, mix2, 0);
 AudioConnection wav3_right(playWav3, 1, mix2, 1);
+
+//CANT DO 4 WAV PLAYERS, BUT LEAVING THESE CONNECTIONS HERE AS A REMINDER THAT THERE ARE TWO EMPTY INPUT SLOTS ON MIX2
+//THIS COULD BE USED FOR A METRONOME OR SOMETHING ELSE DOWN THE LINE??
+// AudioConnection wav4_left(playWav4, 0, mix2, 2);
+// AudioConnection wav4_right(playWav4, 1, mix2, 3);
 
 //output mixer connections
 AudioConnection mix1_left_to_out(mix1, 0, mix_out, 0);

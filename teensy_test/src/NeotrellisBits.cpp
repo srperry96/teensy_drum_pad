@@ -2,10 +2,12 @@
 
 Adafruit_NeoTrellis trellis;
 
+//Array to track which buttons are pressed at any given time
 uint8_t button_states[16] = {0,0,0,0,
                              0,0,0,0,
                              0,0,0,0,
                              0,0,0,0};
+
 
 // Input a value 0 to 255 to get a color value.
 // The colors are a transition r - g - b - back to r.
@@ -29,6 +31,8 @@ TrellisCallback blink(keyEvent evt){
   // Check is the pad pressed?
   if (evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING) {
     trellis.pixels.setPixelColor(evt.bit.NUM, Wheel(map(evt.bit.NUM, 0, trellis.pixels.numPixels(), 0, 255))); //on rising
+    
+    //set corresponding button states array element to 1, so we know which button has been pressed
     button_states[evt.bit.NUM] = 1;
 
   } else if (evt.bit.EDGE == SEESAW_KEYPAD_EDGE_FALLING) {
@@ -44,18 +48,9 @@ TrellisCallback blink(keyEvent evt){
 
 
 bool setup_neotrellis() {
-//   Serial.begin(9600);
-  
-//   if (!trellis.begin()) {
-//     Serial.println("Could not start trellis, check wiring?");
-//     while(1);
-//   } else {
-//     Serial.println("NeoPixel Trellis started");
-//   }
-
-    if(!trellis.begin()){
-        return false;
-    }
+  if(!trellis.begin()){
+      return false;
+  }
 
   //activate all keys and set callbacks
   for(int i=0; i<NEO_TRELLIS_NUM_KEYS; i++){
@@ -65,15 +60,17 @@ bool setup_neotrellis() {
   }
 
   //do a little animation to show we're on
+  //turn pixels on one by one
   for (uint16_t i=0; i<trellis.pixels.numPixels(); i++) {
     trellis.pixels.setPixelColor(i, Wheel(map(i, 0, trellis.pixels.numPixels(), 0, 255)));
     trellis.pixels.show();
-    delay(50);
+    delay(30);
   }
+  //turn pixels off one by one
   for (uint16_t i=0; i<trellis.pixels.numPixels(); i++) {
     trellis.pixels.setPixelColor(i, 0x000000);
     trellis.pixels.show();
-    delay(50);
+    delay(30);
   }
 
     return true;
