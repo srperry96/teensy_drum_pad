@@ -48,6 +48,13 @@ AudioConnection output_right(mix_out, 0, headphones, 1);
 AudioControlSGTL5000 audioShield;
 
 
+String filepath_array[16] = { "claps/CH1_Clap_09.wav",  "claps/CH1_Clap_18.wav", "claps/clap.wav",          "hats/muzikhat.wav",
+                              "kicks/drebd_009.wav",    "kicks/kick2.wav",       "kicks/friedchicken.wav",  "kicks/boombapkick97.wav",
+                              "claps/clap1.wav",        "kicks/kick3.wav",       "snares/snare.wav",        "snares/incredibly overused snare.wav",
+                              "snares/06.wav",          "hats/hat2.wav",         "openhats/openhat1.wav",   "snares/snare1.wav"
+                            };
+
+
 void setup_audio_bits() {
 
   // Audio connections require memory to work.  For more
@@ -70,64 +77,25 @@ void setup_audio_bits() {
   mix2.gain(2, 0.4);
   mix2.gain(3, 0.4);
 
-
-  SPI.setMOSI(SDCARD_MOSI_PIN);
-  SPI.setSCK(SDCARD_SCK_PIN);
-
-  if (!(SD.begin(SDCARD_CS_PIN))) {
-    // stop here, but print a message repetitively
-    while (1) {
-      Serial.println("Unable to access the SD card");
-      delay(500);
-    }
-  }
-
+  Serial.println("Audio bits setup");
 }
 
+
 void sample_switch(int pad_num) {
-  switch(pad_num){
-    case 0:   playFile("claps/CH1_Clap_09.wav");
-              break;
-    case 1:   playFile("claps/CH1_Clap_18.wav");
-              break;
-    case 2:   playFile("claps/clap.wav");
-              break;
-    case 3:   playFile("hats/muzikhat.wav");
-              break;
-    case 4:   playFile("kicks/drebd_009.wav");
-              break;
-    case 5:   playFile("kicks/kick2.wav");
-              break;
-    case 6:   playFile("kicks/friedchicken.wav");
-              break;
-    case 7:   playFile("kicks/boombapkick97.wav");
-              break;
-    case 8:   playFile("claps/clap1.wav");
-              break;
-    case 9:   playFile("kicks/kick3.wav");
-              break;
-    case 10:  playFile("snares/snare.wav");
-              break;
-    case 11:  playFile("snares/incredibly overused snare.wav");
-              break;
-    case 12:  playFile("snares/06.wav");
-              break;
-    case 13:  playFile("hats/hat2.wav");
-              break;
-    case 14:  playFile("openhats/openhat1.wav");
-              break;
-    case 15:  playFile("snares/snare1.wav");
-              break;
-    default:  Serial.print("Hit the default case in switch statement. Number was: ");
-              Serial.println(pad_num);
-              break;
+
+  if((pad_num < 0) || (pad_num > 15)){
+    Serial.print("Pad number out of range: ");
+    Serial.println(pad_num);
+    return;
+  }else{
+    playFile(filepath_array[pad_num].c_str());
   }
 }
 
 
 void playFile(const char *filename){
-  Serial.print("Playing file: ");
-  Serial.println(filename);
+  // Serial.print("Playing file: ");
+  // Serial.println(filename);
 
   //Check for a free wav player to play the sound. Use playWav3 if all are busy
   if(!playWav1.isPlaying()){

@@ -1,38 +1,39 @@
 #include <Arduino.h>
 #include "NeotrellisBits.h"
 #include "AudioBits.h"
+#include "SDCardBits.h"
 
-#include <SD.h>
-#include <SPI.h>
+// #include <SD.h>
+// #include <SPI.h>
 
 
-File root;
+// File root;
 
-//List all files - code from teensy SD library here: https://github.com/PaulStoffregen/SD/blob/master/examples/listfiles/listfiles.ino
-void printDirectory(File dir, int numTabs) {
-   while(true) {
+// //List all files - code from teensy SD library here: https://github.com/PaulStoffregen/SD/blob/master/examples/listfiles/listfiles.ino
+// void printDirectory(File dir, int numTabs) {
+//    while(true) {
      
-     File entry =  dir.openNextFile();
+//      File entry =  dir.openNextFile();
 
-     //if there are no more files, break out of the loop
-     if (! entry) {
-       break;
-     }
-     for (uint8_t i=0; i<numTabs; i++) {
-       Serial.print('\t');
-     }
-     Serial.print(entry.name());
-     if (entry.isDirectory()) {
-       Serial.println("/");
-       printDirectory(entry, numTabs+1);
-     } else {
-       // files have sizes, directories do not
-       Serial.print("\t\t");
-       Serial.println(entry.size(), DEC);
-     }
-     entry.close();
-   }
-}
+//      //if there are no more files, break out of the loop
+//      if (! entry) {
+//        break;
+//      }
+//      for (uint8_t i=0; i<numTabs; i++) {
+//        Serial.print('\t');
+//      }
+//      Serial.print(entry.name());
+//      if (entry.isDirectory()) {
+//        Serial.println("/");
+//        printDirectory(entry, numTabs+1);
+//      } else {
+//        // files have sizes, directories do not
+//        Serial.print("\t\t");
+//        Serial.println(entry.size(), DEC);
+//      }
+//      entry.close();
+//    }
+// }
 
 
 unsigned long start_millis, current_millis;
@@ -51,14 +52,10 @@ void setup() {
 
   //Setup audio (includes SD card)
   setup_audio_bits();
-  Serial.println("Audio bits setup (hopefully)");
 
+  setup_sd_card();
 
-  Serial.println("Listing files on SD card");
-  root = SD.open("/");
-  printDirectory(root, 0);
-  Serial.println("End of file structure");
-
+  load_sample_filepaths();
 
   start_millis = millis();
 }
