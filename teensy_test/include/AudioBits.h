@@ -5,6 +5,9 @@
 #include "SDCardBits.h"
 #include "Metronome.h"
 
+#include "TFTScreenBits.h"
+
+
 void setup_audio_bits();
 
 void play_pad_sample(int pad_num);

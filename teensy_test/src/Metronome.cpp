@@ -2,6 +2,11 @@
 
 #include "Metronome.h"
 
+
+uint8_t metronome_tempo = 100;
+uint8_t metronome_period = MILLIS_PER_MIN / metronome_tempo;
+bool metronome_on = false;
+
 // Converted from metronome_click.wav, using 44100 Hz, 16 bit u-law encoding
 PROGMEM
 const unsigned int AudioSampleMetronome_click[449] = {

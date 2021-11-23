@@ -4,7 +4,6 @@
 #include <SD.h>
 #include <SPI.h>
 
-
 //SD card pin definitions for use with teensy audio board
 #define SDCARD_CS_PIN    10
 #define SDCARD_MOSI_PIN  7
