@@ -29,12 +29,20 @@ AudioConnection wav2_right(playWav2, 1, mix1, 3);
 AudioConnection wav3_left(playWav3, 0, mix2, 0);
 AudioConnection wav3_right(playWav3, 1, mix2, 1);
 
-//CANT DO 4 WAV PLAYERS, BUT LEAVING THESE CONNECTIONS HERE AS A REMINDER THAT THERE ARE TWO EMPTY INPUT SLOTS ON MIX2
-//THIS COULD BE USED FOR A METRONOME OR SOMETHING ELSE DOWN THE LINE??
-// AudioConnection wav4_left(playWav4, 0, mix2, 2);
-// AudioConnection wav4_right(playWav4, 1, mix2, 3);
+
+
+//waveform generator bits
+AudioSynthWaveform waveform1;
+AudioFilterStateVariable filter1;
+
+//wave generator + filter patches
+AudioConnection waveform_to_filter(waveform1, 0, filter1, 0);
+AudioConnection filter_to_mixer(filter1, 0, mix2, 3);
+
+
+//metronome patch
 AudioConnection metronome_patch(metronome_click, 0, mix2, 2);
-//ONE MORE EMPTY SLOT NOW WE HAVE THE METRONOME
+
 
 
 //output mixer connections
@@ -52,6 +60,8 @@ AudioConnection output_right(mix_out, 0, headphones, 1);
 // Create an object to control the audio shield.
 AudioControlSGTL5000 audioShield;
 
+
+uint16_t current_volume = 500;
 
 void setup_audio_bits() {
 
@@ -110,4 +120,11 @@ void play_file(const char *filename){
 
 void play_metronome(){
   metronome_click.play(AudioSampleMetronome_click);
+}
+
+
+void set_volume(int volume){
+  current_volume = volume;
+  float vol = volume / 1024.0;
+  audioShield.volume(vol);
 }

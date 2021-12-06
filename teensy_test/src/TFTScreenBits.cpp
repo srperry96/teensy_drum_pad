@@ -5,11 +5,12 @@ ILI9341_t3 tft = ILI9341_t3(TFT_CS, TFT_DC, TFT_RST, TFT_MOSI, TFT_SCLK, TFT_MIS
 void setup_screen(){
     tft.begin();
     //rotation will be 1 or 3, depending on which way the screen is eventually mounted
-    tft.setRotation(1);
+    tft.setRotation(3);
     tft.fillScreen(ILI9341_BLACK);
     tft.setTextColor(ILI9341_YELLOW);
     tft.setTextSize(2);
     tft.println("Big Beatz Machine");
+    tft.println("------------------");
 }
 
 //OLD TEST FUNCTION - LEAVING HERE AS REFERENCE FOR LATER ON
