@@ -5,17 +5,27 @@
 #include "AudioBits.h"
 
 //these are instantiated in AudioBits.h as they need to be there for the patches to work properly
-extern AudioSynthWaveform waveform1;
+extern AudioSynthWaveform osc1;
+extern AudioSynthWaveform osc2;
 extern AudioFilterStateVariable filter1;
 
 
-void start_sin();
+void start_osc1();
+void start_osc2();
 
-void set_freq(int freq);
+void set_osc2_detune(int detune);
 
-void stop_sin();
+
+//void set_freq(int note);
+
+void stop_osc1();
+void stop_osc2();
+
 
 void set_filter_freq(int freq);
+
+void play_pad_note(int btn);
+
 
 extern bool wave_playing;
 

@@ -12,25 +12,38 @@
 #define G_SHARP_0 8
 #define A_0 9
 #define A_SHARP_0 10
-#define B 11
+#define B_0 11
+
+#define FILT_CUT_LIMIT 10000
+
+#define FILT_Q_LIM_HIGH 0.7
+#define FILT_Q_LIM_LOW 5 //limits between 0.7 and 5
+
 
 //from C0 to B0 (for every octave, we can double freq each time)
 float some_note_freqs[12] = {16.35, 17.32, 18.35, 19.45, 20.6, 21.83, 23.12, 24.5, 25.96, 27.5, 29.14, 30.87};
 
+float osc1freq = 80.0, osc2freq = 80.0;
 
 bool wave_playing = false;
 
-void start_sin(){
-    waveform1.amplitude(0.2);
-    waveform1.frequency(80);
-    waveform1.begin(WAVEFORM_SINE);
+void start_osc1(){
+    osc1.amplitude(0.4);
+    osc1.frequency(osc1freq);
+    osc1.begin(WAVEFORM_TRIANGLE);
 }
 
-void set_freq(int freq){
-    int scaled = map(freq, 0, 1023, 0, 11);
+void start_osc2(){
+    osc2.amplitude(0.4);
+    osc2.frequency(osc2freq);
+    osc2.begin(WAVEFORM_TRIANGLE);
+}
+
+void set_freq(int note){
+    // int scaled = map(freq, 0, 1023, 0, 11);
     int octave = 2;
 
-    float freq_new = some_note_freqs[scaled];
+    float freq_new = some_note_freqs[note];
 
     //double the frequency for each octave we want to go up
     //this may be a slightly hacky way to do it. Should probs add a lookup table with all notes at some point
@@ -38,7 +51,11 @@ void set_freq(int freq){
         freq_new *= 2;
     }
 
-    waveform1.frequency(freq_new);
+    osc1.frequency(freq_new);
+    // osc2.frequency(freq_new);
+
+    osc1freq = freq_new;
+    // osc2freq = freq_new;
 }
 
 void set_filter_freq(int freq){
@@ -46,6 +63,54 @@ void set_filter_freq(int freq){
     filter1.frequency(scaled);
 }
 
-void stop_sin(){
-    waveform1.amplitude(0);
+void stop_osc1(){
+    osc1.amplitude(0);
+}
+
+void stop_osc2(){
+    osc2.amplitude(0);
+}
+
+void set_osc2_detune(int detune){
+    int scaled = map(detune, 0, 1023, 0, 100);
+    float scaled2 = scaled / 100.0;
+    float detuneVal = 1.0 - (0.04 * scaled2);
+
+    
+    osc2freq = osc1freq * detuneVal;
+
+    osc2.frequency(osc2freq);
+
+}
+
+void play_pad_note(int btn){
+
+    switch(btn){
+        case 12:    set_freq(C_0);
+                    break;
+        case 13:    set_freq(C_SHARP_0);
+                    break;
+        case 14:    set_freq(D_0);
+                    break;
+        case 15:    set_freq(D_SHARP_0);
+                    break;    
+        case 8:     set_freq(E_0);
+                    break;
+        case 9:     set_freq(F_0);
+                    break;
+        case 10:    set_freq(F_SHARP_0);
+                    break;
+        case 11:    set_freq(G_0);
+                    break;    
+
+        case 4:     set_freq(G_SHARP_0);
+                    break;
+        case 5:     set_freq(A_0);
+                    break;
+        case 6:     set_freq(A_SHARP_0);
+                    break;
+        case 7:     set_freq(B_0);
+                    break;
+        default:    break;   
+    }
 }

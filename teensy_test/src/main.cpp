@@ -56,7 +56,18 @@ void loop() {
     //check pad states, play corresponding sample if needed
     for(btn_count = 0; btn_count < 16; btn_count++){
       if(button_states[btn_count] == 1){
-        play_pad_sample(btn_count);
+        if(pot4 < 500){ //THIS WILL BE CHANGED TO A PROPER COMPARISON AT SOME POINT. FOR NOW, TURNING POT4 SWITCHES MODES
+          play_pad_sample(btn_count);
+
+        //else play corresponding note    
+        }else{
+          if(!wave_playing){
+            start_osc1();
+            start_osc2();
+            wave_playing = true;
+          }
+          play_pad_note(btn_count);
+        }
 
         //reset the button state so we dont double play the sample
         button_states[btn_count] = 0;
@@ -82,16 +93,15 @@ void loop() {
       set_volume(pot1);
     }
 
-    if(pot4 > 500){
-      if(!wave_playing){
-        start_sin();
-        wave_playing = true;
-      }
+    if(wave_playing){
       set_filter_freq(pot2);
-      set_freq(pot3);
-    }else{
-      stop_sin();
-      wave_playing = false;
+      set_osc2_detune(pot3);
+    
+      if(pot4 < 500){
+        stop_osc1();
+        stop_osc2();
+        wave_playing = false;
+      }
     }
 
     pot_check_millis = current_millis;

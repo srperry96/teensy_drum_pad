@@ -32,11 +32,19 @@ AudioConnection wav3_right(playWav3, 1, mix2, 1);
 
 
 //waveform generator bits
-AudioSynthWaveform waveform1;
+AudioSynthWaveform osc1;
+AudioSynthWaveform osc2;
+
 AudioFilterStateVariable filter1;
 
+AudioMixer4 osc_mixer;
+
+
 //wave generator + filter patches
-AudioConnection waveform_to_filter(waveform1, 0, filter1, 0);
+AudioConnection osc1_to_osc_mix(osc1, 0, osc_mixer, 0);
+AudioConnection osc2_to_osc_mix(osc2, 0, osc_mixer, 1);
+
+AudioConnection osc_mix_to_filter(osc_mixer, 0, filter1, 0);
 AudioConnection filter_to_mixer(filter1, 0, mix2, 3);
 
 
