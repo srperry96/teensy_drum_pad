@@ -25,6 +25,9 @@ void setup_sd_card(){
         }
     }
     Serial.println("Setup SD card");
+
+    //Load sample filepaths from SD, and assign them to the Neotrellis pads
+    load_sample_filepaths();
 }
 
 

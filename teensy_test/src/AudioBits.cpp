@@ -71,7 +71,8 @@ AudioControlSGTL5000 audioShield;
 
 uint16_t current_volume = 500;
 
-void setup_audio_bits() {
+// void setup_audio_bits() {
+Sound::Sound(){
 
   // Audio connections require memory to work.  For more
   // detailed information, see the MemoryAndCpuUsage example
@@ -97,7 +98,7 @@ void setup_audio_bits() {
 }
 
 
-void play_pad_sample(int pad_num) {
+void Sound::play_pad_sample(int pad_num) {
 
   if((pad_num < 0) || (pad_num > 15)){
     Serial.print("Pad number out of range: ");
@@ -109,7 +110,7 @@ void play_pad_sample(int pad_num) {
 }
 
 
-void play_file(const char *filename){
+void Sound::play_file(const char *filename){
   // Serial.print("Playing file: ");
   // Serial.println(filename);
 
@@ -126,12 +127,12 @@ void play_file(const char *filename){
   delay(25);
 }
 
-void play_metronome(){
+void Sound::play_metronome(){
   metronome_click.play(AudioSampleMetronome_click);
 }
 
 
-void set_volume(int volume){
+void Sound::set_volume(int volume){
   current_volume = volume;
   float vol = volume / 1024.0;
   audioShield.volume(vol);
