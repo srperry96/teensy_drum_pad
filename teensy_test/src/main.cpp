@@ -1,16 +1,14 @@
 #include <Arduino.h>
-#include "NeotrellisBits.h"
-#include "AudioBits.h"
 #include "SDCardBits.h"
-#include "TFTScreenBits.h"
 #include "SharedBits.h"
 
 unsigned long neotrellis_millis, current_millis;
 unsigned long tempo_millis, waveform_millis, pot_check_millis;
 
-Sound sound;
-WaveGenerator wavegen;
-TFTScreen screen;
+uint8_t btn_count = 0;
+uint16_t pot1, pot2, pot3, pot4;
+uint8_t pot_check_period = 10;
+
 
 void setup() {
     Serial.begin(9600);
@@ -26,11 +24,6 @@ void setup() {
     pot_check_millis = neotrellis_millis;
 
 }
-
-uint8_t btn_count = 0;
-
-uint16_t pot1, pot2, pot3, pot4;
-uint8_t pot_check_period = 10;
 
 
 void loop() {

@@ -2,8 +2,6 @@
 #define __WAVEGENERATOR_H__
 
 #include <Audio.h>
-#include "AudioBits.h"
-
 
 class WaveGenerator
 {

@@ -5,10 +5,6 @@
 #include "SDCardBits.h"
 #include "Metronome.h"
 
-#include "TFTScreenBits.h"
-
-#include "WaveGenerator.h"
-
 class Sound{
     public:
         Sound();

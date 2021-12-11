@@ -1,4 +1,5 @@
 #include "WaveGenerator.h"
+#include "SharedBits.h"
 
 //defines here to be used with the note freqs array
 #define C_0 0
@@ -18,6 +19,8 @@
 
 #define FILT_Q_LIM_HIGH 0.7
 #define FILT_Q_LIM_LOW 5 //limits between 0.7 and 5
+
+WaveGenerator wavegen;
 
 
 WaveGenerator::WaveGenerator(){}

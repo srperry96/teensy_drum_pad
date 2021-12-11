@@ -1,7 +1,7 @@
 #include <TFTScreenBits.h>
 #include "SharedBits.h"
 
-// TFTScreen screen;
+TFTScreen screen;
 
 TFTScreen::TFTScreen(){
     ILI9341_t3 tft = ILI9341_t3(TFT_CS, TFT_DC, TFT_RST, TFT_MOSI, TFT_SCLK, TFT_MISO);

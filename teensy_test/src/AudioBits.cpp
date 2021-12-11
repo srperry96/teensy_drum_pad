@@ -1,4 +1,8 @@
 #include "AudioBits.h"
+#include "SharedBits.h"
+
+Sound sound;
+
 
 //Mixers to take in wav file signals
 AudioMixer4        mix1;
@@ -51,8 +55,6 @@ AudioConnection filter_to_mixer(filter1, 0, mix2, 3);
 //metronome patch
 AudioConnection metronome_patch(metronome_click, 0, mix2, 2);
 
-
-
 //output mixer connections
 AudioConnection mix1_left_to_out(mix1, 0, mix_out, 0);
 AudioConnection mix1_right_to_out(mix1, 1, mix_out, 1);
@@ -69,9 +71,6 @@ AudioConnection output_right(mix_out, 0, headphones, 1);
 AudioControlSGTL5000 audioShield;
 
 
-uint16_t current_volume = 500;
-
-// void setup_audio_bits() {
 Sound::Sound(){
 
   // Audio connections require memory to work.  For more
