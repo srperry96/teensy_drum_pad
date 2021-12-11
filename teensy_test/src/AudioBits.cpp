@@ -111,8 +111,8 @@ void Sound::play_pad_sample(int pad_num) {
 
 
 void Sound::play_file(const char *filename){
-  // Serial.print("Playing file: ");
-  // Serial.println(filename);
+  Serial.print("Playing file: ");
+  Serial.println(filename);
 
   //Check for a free wav player to play the sound. Use playWav3 if all are busy
   if(!playWav1.isPlaying()){

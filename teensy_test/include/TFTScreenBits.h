@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include "ILI9341_t3.h"
 
+
 //Pin setup chosen based on this page: https://www.pjrc.com/store/display_ili9341.html
 #define TFT_DC      20
 #define TFT_CS      21
@@ -16,9 +17,12 @@
 class TFTScreen{
     public:
         TFTScreen();
-
         void clear();
         void print_text(const char* text);
+        
+    private:
+        static ILI9341_t3 tft;
+
 };
 
 #endif

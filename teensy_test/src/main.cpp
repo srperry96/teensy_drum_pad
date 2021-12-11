@@ -3,6 +3,7 @@
 #include "AudioBits.h"
 #include "SDCardBits.h"
 #include "TFTScreenBits.h"
+#include "SharedBits.h"
 
 unsigned long neotrellis_millis, current_millis;
 unsigned long tempo_millis, waveform_millis, pot_check_millis;
@@ -15,7 +16,6 @@ void setup() {
     Serial.begin(9600);
 
     //Setup hardware
-    setup_neotrellis();
     setup_sd_card();
 
     //get start millis for timing, instead of just using delays
@@ -46,12 +46,12 @@ void loop() {
 
 
   //Read neotrellis at the specified rate
-  if(current_millis - neotrellis_millis > neotrellis_period){
-    trellis.read();
+  if(current_millis - neotrellis_millis > neo.neotrellis_period){
+    neo.trellis.read();
   
     //check pad states, play corresponding sample if needed
     for(btn_count = 0; btn_count < 16; btn_count++){
-      if(button_states[btn_count] == 1){
+      if(neo.button_states[btn_count] == 1){
         if(pot4 < 500){ //THIS WILL BE CHANGED TO A PROPER COMPARISON AT SOME POINT. FOR NOW, TURNING POT4 SWITCHES MODES
           sound.play_pad_sample(btn_count);
 
@@ -66,7 +66,7 @@ void loop() {
         }
 
         //reset the button state so we dont double play the sample
-        button_states[btn_count] = 0;
+        neo.button_states[btn_count] = 0;
       }
     }
     neotrellis_millis = current_millis;

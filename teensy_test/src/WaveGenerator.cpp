@@ -20,9 +20,7 @@
 #define FILT_Q_LIM_LOW 5 //limits between 0.7 and 5
 
 
-WaveGenerator::WaveGenerator(){
-    
-}
+WaveGenerator::WaveGenerator(){}
 
 
 

@@ -4,15 +4,21 @@
 #include <Arduino.h>
 #include "Adafruit_NeoTrellis.h"
 
-const uint8_t neotrellis_period = 20; //neotrellis has a resolution of around 60hz
-
-
-uint32_t Wheel(byte WheelPos);
 TrellisCallback blink(keyEvent evt);
-void setup_neotrellis();
 
-extern Adafruit_NeoTrellis trellis;
-extern bool button_update;
-extern uint8_t button_states[16];
+class Neotrellis{
+    public:
+        Neotrellis();
+        uint32_t Wheel(byte WheelPos);
+        
+        Adafruit_NeoTrellis trellis;
+        const uint8_t neotrellis_period = 20; //neotrellis has a resolution of around 60hz
+        
+        uint8_t button_states[16] = {0,0,0,0,
+                                     0,0,0,0,
+                                     0,0,0,0,
+                                     0,0,0,0};
+
+};
 
 #endif
