@@ -2,12 +2,14 @@
 #define __AUDIOBITS_H__
 
 #include <Audio.h>
-#include "SDCardBits.h"
 #include "Metronome.h"
+#include "SharedBits.h"
 
 class Sound{
     public:
         Sound();
+
+        void update_volume(uint16_t vol);
 
         void play_pad_sample(int pad_num);
 

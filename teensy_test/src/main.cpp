@@ -1,45 +1,47 @@
 #include <Arduino.h>
 #include "SDCardBits.h"
+#include "AudioBits.h"
 #include "SharedBits.h"
 
-unsigned long neotrellis_millis, current_millis;
-unsigned long tempo_millis, waveform_millis, pot_check_millis;
+#define POT_VOL A1
+#define POT2 A11
+#define POT3 A3
+#define POT4 A10
+
+elapsedMillis neotrellis_millis, tempo_millis, waveform_millis, pot_check_millis;
 
 uint8_t btn_count = 0;
 uint16_t pot1, pot2, pot3, pot4;
 uint8_t pot_check_period = 10;
 
+Sound sound;
 
 void setup() {
     Serial.begin(9600);
 
-    //Setup hardware
-    setup_sd_card();
+    //Setup SD card. IMPORTANT: This has to be done here, not in another file / in the MicroSD constructor. Not entirely sure why but it works here.
+    sd_card.setup_sd_card();
 
     //get start millis for timing, instead of just using delays
-    neotrellis_millis = millis();
-    tempo_millis = neotrellis_millis;
-
-    waveform_millis = neotrellis_millis;
-    pot_check_millis = neotrellis_millis;
-
+    neotrellis_millis = 0;
+    tempo_millis = 0;
+    waveform_millis = 0;
+    pot_check_millis = 0;
 }
 
 
 void loop() {
-  current_millis = millis();
 
-  if(metronome_on){
-    if(current_millis - tempo_millis > metronome_period){
+  if(tempo_millis > metronome.period){
+    if(metronome.on){
       sound.play_metronome();
-      tempo_millis = current_millis;
     }
+    tempo_millis = 0;
   }
 
 
-
   //Read neotrellis at the specified rate
-  if(current_millis - neotrellis_millis > neo.neotrellis_period){
+  if(neotrellis_millis > neo.neotrellis_period){
     neo.trellis.read();
   
     //check pad states, play corresponding sample if needed
@@ -62,37 +64,31 @@ void loop() {
         neo.button_states[btn_count] = 0;
       }
     }
-    neotrellis_millis = current_millis;
+    neotrellis_millis = 0;
   }
 
 
+    if(pot_check_millis > pot_check_period){
 
-  if(current_millis - pot_check_millis > pot_check_period){
-
-    pot1 = analogRead(A1);
-    pot2 = analogRead(A11);
-    pot3 = analogRead(A3);
-    pot4 = analogRead(A10);
-
+      pot1 = analogRead(POT_VOL);
+      pot2 = analogRead(POT2);
+      pot3 = analogRead(POT3);
+      pot4 = analogRead(POT4);
 
 
+      sound.update_volume(pot1);
 
-    //change volume if knob has moved enough (+- 2 accounts for noisy analog readings)
-    if(!((sound.current_volume > pot1 - 2) && (sound.current_volume < pot1 + 2))){
-      sound.set_volume(pot1);
-    }
-
-    if(wavegen.wave_playing){
-      wavegen.set_filter_freq(pot2);
-      wavegen.set_osc2_detune(pot3);
-    
-      if(pot4 < 500){
-        wavegen.stop_osc1();
-        wavegen.stop_osc2();
-        wavegen.wave_playing = false;
+      if(wavegen.wave_playing){
+        wavegen.set_filter_freq(pot2);
+        wavegen.set_osc2_detune(pot3);
+      
+        if(pot4 < 500){
+          wavegen.stop_osc1();
+          wavegen.stop_osc2();
+          wavegen.wave_playing = false;
+        }
       }
-    }
 
-    pot_check_millis = current_millis;
+      pot_check_millis = 0;
   }
 }

@@ -12,30 +12,36 @@
 //for now, assume we have max 20 of each type of sample on the sd card
 #define MAX_SAMPLES_PER_TYPE 20
 
-//Functions for printing SD card file structure out via Serial
-void printDirectory(File dir, int numTabs);
-void list_files_on_sd();
 
-//Connect to the SD card
-void setup_sd_card();
+class MicroSD{
+    public:
+        MicroSD();
 
-//Load in filepaths for all the samples
-void load_sample_filepaths();
+        //Functions for printing SD card file structure out via Serial
+        void printDirectory(File dir, int numTabs);
+        void list_files_on_sd();
 
-void set_default_sample_filepaths();
+        //Connect to the SD card
+        void setup_sd_card();
+
+        //Load in filepaths for all the samples
+        void load_sample_filepaths();
+
+        void set_default_sample_filepaths();
+        void load_single_set(String paths[20], uint8_t *num_samples, const char *sample_type);
 
 
-//Arrays to store sample filepaths
-extern String kick_paths[MAX_SAMPLES_PER_TYPE];
-extern String snare_paths[MAX_SAMPLES_PER_TYPE];
-extern String hat_paths[MAX_SAMPLES_PER_TYPE];
-extern String openhat_paths[MAX_SAMPLES_PER_TYPE];
-extern String clap_paths[MAX_SAMPLES_PER_TYPE];
+        //Arrays to store sample filepaths
+        String kick_paths[MAX_SAMPLES_PER_TYPE];
+        String snare_paths[MAX_SAMPLES_PER_TYPE];
+        String hat_paths[MAX_SAMPLES_PER_TYPE];
+        String openhat_paths[MAX_SAMPLES_PER_TYPE];
+        String clap_paths[MAX_SAMPLES_PER_TYPE];
 
-extern String pad_sample_paths[16];
+        String pad_sample_paths[16];
 
-//numbers of each type of sample
-extern uint8_t num_kicks, num_snares, num_hats, num_openhats, num_claps;
-
+        //numbers of each type of sample
+        uint8_t num_kicks = 0, num_snares = 0, num_hats = 0, num_openhats = 0, num_claps = 0;
+};
 
 #endif

@@ -3,14 +3,16 @@
 
 #include "NeotrellisBits.h"
 #include "TFTScreenBits.h"
-#include "AudioBits.h"
 #include "WaveGenerator.h"
+#include "SDCardBits.h"
+#include "Metronome.h"
 
 extern Neotrellis neo;
 extern TFTScreen screen;
-extern Sound sound;
 extern WaveGenerator wavegen;
+extern MicroSD sd_card;
 
+extern Metronome metronome;
 
 
 

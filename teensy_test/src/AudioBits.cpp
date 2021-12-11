@@ -1,8 +1,5 @@
 #include "AudioBits.h"
-#include "SharedBits.h"
-
-Sound sound;
-
+// #include "SharedBits.h"
 
 //Mixers to take in wav file signals
 AudioMixer4        mix1;
@@ -104,14 +101,14 @@ void Sound::play_pad_sample(int pad_num) {
     Serial.println(pad_num);
     return;
   }else{
-    play_file(pad_sample_paths[pad_num].c_str());
+    play_file(sd_card.pad_sample_paths[pad_num].c_str());
   }
 }
 
 
 void Sound::play_file(const char *filename){
-  Serial.print("Playing file: ");
-  Serial.println(filename);
+  // Serial.print("Playing file: ");
+  // Serial.println(filename);
 
   //Check for a free wav player to play the sound. Use playWav3 if all are busy
   if(!playWav1.isPlaying()){
@@ -127,7 +124,7 @@ void Sound::play_file(const char *filename){
 }
 
 void Sound::play_metronome(){
-  metronome_click.play(AudioSampleMetronome_click);
+  metronome_click.play(metronome.AudioSampleMetronome_click);
 }
 
 
@@ -135,4 +132,11 @@ void Sound::set_volume(int volume){
   current_volume = volume;
   float vol = volume / 1024.0;
   audioShield.volume(vol);
+}
+
+void Sound::update_volume(uint16_t new_vol){
+    //change volume if knob has moved enough (+- 2 accounts for noisy analog readings)
+    if(!((current_volume > new_vol - 2) && (current_volume < new_vol + 2))){
+      set_volume(new_vol);
+    }
 }
