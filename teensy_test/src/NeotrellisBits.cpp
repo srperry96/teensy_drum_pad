@@ -16,7 +16,7 @@ Neotrellis::Neotrellis(){
   for(int i=0; i<NEO_TRELLIS_NUM_KEYS; i++){
     trellis.activateKey(i, SEESAW_KEYPAD_EDGE_RISING);
     trellis.activateKey(i, SEESAW_KEYPAD_EDGE_FALLING);
-    trellis.registerCallback(i, blink);
+    trellis.registerCallback(i, pad_callback);
   }
 
   Serial.println("Setup Neotrellis");
@@ -26,13 +26,13 @@ Neotrellis::Neotrellis(){
   for (uint16_t i=0; i<trellis.pixels.numPixels(); i++) {
     trellis.pixels.setPixelColor(i, Wheel(map(i, 0, trellis.pixels.numPixels(), 0, 255)));
     trellis.pixels.show();
-    delay(30);
+    delay(20);
   }
   //turn pixels off one by one
   for (uint16_t i=0; i<trellis.pixels.numPixels(); i++) {
     trellis.pixels.setPixelColor(i, 0x000000);
     trellis.pixels.show();
-    delay(30);
+    delay(20);
   }
   
   
@@ -56,7 +56,7 @@ uint32_t Neotrellis::Wheel(byte WheelPos) {
 
 
 //define a callback for key presses
-TrellisCallback blink(keyEvent evt){
+TrellisCallback pad_callback(keyEvent evt){
   // Check is the pad pressed?
   if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING) {
     neo.trellis.pixels.setPixelColor(evt.bit.NUM, neo.Wheel(map(evt.bit.NUM, 0, neo.trellis.pixels.numPixels(), 0, 255))); //on rising
@@ -64,9 +64,21 @@ TrellisCallback blink(keyEvent evt){
     //set corresponding button states array element to 1, so we know which button has been pressed
     neo.button_states[evt.bit.NUM] = 1;
 
+    neo.held_button_id = evt.bit.NUM;
+    neo.button_hold_counter = millis();
+
   } else if (evt.bit.EDGE == SEESAW_KEYPAD_EDGE_FALLING) {
   // or is the pad released?
     neo.trellis.pixels.setPixelColor(evt.bit.NUM, 0); //off falling
+
+    //check if button was held for a long time?
+    if(millis() - neo.button_hold_counter > BUTTON_HOLD_LIMIT){
+      //button held
+      Serial.println("Button long pressed!!!");
+      menu.show_main_menu();
+    }
+
+
   }
 
   // Turn on/off the neopixels!

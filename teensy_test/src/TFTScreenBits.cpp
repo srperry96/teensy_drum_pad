@@ -1,10 +1,12 @@
 #include <TFTScreenBits.h>
 #include "SharedBits.h"
 
+ILI9341_t3 TFTScreen::tft = ILI9341_t3(TFT_CS, TFT_DC, TFT_RST, TFT_MOSI, TFT_SCLK, TFT_MISO);
 TFTScreen screen;
 
+
 TFTScreen::TFTScreen(){
-    ILI9341_t3 tft = ILI9341_t3(TFT_CS, TFT_DC, TFT_RST, TFT_MOSI, TFT_SCLK, TFT_MISO);
+    // ILI9341_t3 tft = ILI9341_t3(TFT_CS, TFT_DC, TFT_RST, TFT_MOSI, TFT_SCLK, TFT_MISO);
 
     tft.begin();
     //rotation will be 1 or 3, depending on which way the screen is eventually mounted
@@ -19,7 +21,7 @@ TFTScreen::TFTScreen(){
     tft.println();
     tft.println("Menu to be added...");
 
-    Serial.println("Setup Screen");
+    Serial.println("Setup Screen"); 
 }
 
 
@@ -27,7 +29,7 @@ void TFTScreen::clear(){
     tft.fillScreen(ILI9341_BLACK);
 }
 
-void TFTScreen::print_text(const char* text){
-    tft.setCursor(0,0);
+void TFTScreen::print_text(const char* text, uint8_t x, uint8_t y){
+    tft.setCursor(x,y);
     tft.println(text);
 }

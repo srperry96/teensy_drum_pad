@@ -10,6 +10,7 @@
 
 elapsedMillis neotrellis_millis, tempo_millis, waveform_millis, pot_check_millis;
 
+
 uint8_t btn_count = 0;
 uint16_t pot1, pot2, pot3, pot4;
 uint8_t pot_check_period = 10;
@@ -27,6 +28,7 @@ void setup() {
     tempo_millis = 0;
     waveform_millis = 0;
     pot_check_millis = 0;
+
 }
 
 

@@ -4,7 +4,9 @@
 #include <Arduino.h>
 #include "Adafruit_NeoTrellis.h"
 
-TrellisCallback blink(keyEvent evt);
+#define BUTTON_HOLD_LIMIT 1500
+
+TrellisCallback pad_callback(keyEvent evt);
 
 class Neotrellis{
     public:
@@ -18,6 +20,9 @@ class Neotrellis{
                                      0,0,0,0,
                                      0,0,0,0,
                                      0,0,0,0};
+
+        unsigned int button_hold_counter = 0;
+        int8_t held_button_id = -1;
 
 };
 
