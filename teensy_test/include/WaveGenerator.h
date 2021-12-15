@@ -32,7 +32,7 @@ class WaveGenerator
 //these are instantiated in AudioBits.h as they need to be there for the patches to work properly
 extern AudioSynthWaveform osc1;
 extern AudioSynthWaveform osc2;
-extern AudioFilterStateVariable filter1;
+extern AudioFilterStateVariable osc_filter1;
 
 
 #endif

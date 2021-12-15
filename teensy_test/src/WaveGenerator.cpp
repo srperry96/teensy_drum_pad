@@ -67,7 +67,7 @@ void WaveGenerator::set_freq(int note){
 
 void WaveGenerator::set_filter_freq(int freq){
     int scaled = map(freq, 0, 1023, 0, 8000);
-    filter1.frequency(scaled);
+    osc_filter1.frequency(scaled);
 }
 
 void WaveGenerator::stop_osc1(){

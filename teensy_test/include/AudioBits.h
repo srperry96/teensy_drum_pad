@@ -5,6 +5,8 @@
 #include "Metronome.h"
 #include "SharedBits.h"
 
+#define MIC_MIXER_CHANNEL 3
+
 class Sound{
     public:
         Sound();

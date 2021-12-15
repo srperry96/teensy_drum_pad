@@ -1,34 +1,45 @@
 #include "AudioBits.h"
-// #include "SharedBits.h"
 
-//Mixers to take in wav file signals
-AudioMixer4        mix1;
-AudioMixer4        mix2;
+//mixers to take in wav file signals
+AudioMixer4        mixer_wav1;
+AudioMixer4        mixer_wav2; //this is also used for the metronome
+
+//wave generator mixer
+AudioMixer4 mixer_osc;
 
 //output mixer
-AudioMixer4        mix_out;
+AudioMixer4        mixer_out;
 
+//microphone input from teensy audio board
+AudioInputI2S mic_in;
 
-//Output to headphone jack on teensy audio board
+//headphone output on teensy audio board
 AudioOutputI2S     headphones;
+
 
 //Setup wav players (max 3 to avoid parallel SD card read audio glitches)
 AudioPlaySdWav playWav1;
 AudioPlaySdWav playWav2;
 AudioPlaySdWav playWav3;
 
+//metronome click player (stored in raw format in the code)
 AudioPlayMemory metronome_click;
 
 
 //wav player connections
-AudioConnection wav1_left(playWav1, 0, mix1, 0);
-AudioConnection wav1_right(playWav1, 1, mix1, 1);
+AudioConnection wav1_left(playWav1,  0, mixer_wav1, 0);
+AudioConnection wav1_right(playWav1, 1, mixer_wav1, 1);
 
-AudioConnection wav2_left(playWav2, 0, mix1, 2);
-AudioConnection wav2_right(playWav2, 1, mix1, 3);
+AudioConnection wav2_left(playWav2,  0, mixer_wav1, 2);
+AudioConnection wav2_right(playWav2, 1, mixer_wav1, 3);
 
-AudioConnection wav3_left(playWav3, 0, mix2, 0);
-AudioConnection wav3_right(playWav3, 1, mix2, 1);
+AudioConnection wav3_left(playWav3,  0, mixer_wav2, 0);
+AudioConnection wav3_right(playWav3, 1, mixer_wav2, 1);
+
+//metronome patch using one of the spare channels on mixer_wav2
+AudioConnection metronome_patch(metronome_click, 0, mixer_wav2, 2);
+
+//!!!!1 channel free on mixer_wav2!!!!
 
 
 
@@ -36,32 +47,31 @@ AudioConnection wav3_right(playWav3, 1, mix2, 1);
 AudioSynthWaveform osc1;
 AudioSynthWaveform osc2;
 
-AudioFilterStateVariable filter1;
+//low pass filter for oscillator
+AudioFilterStateVariable osc_filter1;
 
-AudioMixer4 osc_mixer;
+//mixer to combine osc1 and osc2
+AudioConnection osc1_to_mixer_osc(osc1, 0, mixer_osc, 0);
+AudioConnection osc2_to_mixer_osc(osc2, 0, mixer_osc, 1);
+
+//combined osc1 and osc2 to filter
+AudioConnection mixer_osc_to_filter(mixer_osc, 0, osc_filter1, 0);
+//probs want to add a connection between mixer_osc and filter for distortion
+//probs just an amplifier that overdrives it (could add bitcrush too)
 
 
-//wave generator + filter patches
-AudioConnection osc1_to_osc_mix(osc1, 0, osc_mixer, 0);
-AudioConnection osc2_to_osc_mix(osc2, 0, osc_mixer, 1);
 
-AudioConnection osc_mix_to_filter(osc_mixer, 0, filter1, 0);
-AudioConnection filter_to_mixer(filter1, 0, mix2, 3);
-
-
-//metronome patch
-AudioConnection metronome_patch(metronome_click, 0, mix2, 2);
 
 //output mixer connections
-AudioConnection mix1_left_to_out(mix1, 0, mix_out, 0);
-AudioConnection mix1_right_to_out(mix1, 1, mix_out, 1);
+AudioConnection wavs1_to_mixer_out(  mixer_wav1,  0, mixer_out, 0); //wav samples 1 and 2 to output
+AudioConnection wavs2_to_mixer_out(  mixer_wav2,  0, mixer_out, 1); //wav samples 3 and metronome to output
+AudioConnection wavegen_to_mixer_out(osc_filter1, 0, mixer_out, 2); //wave generator to output
+AudioConnection mic_to_mixer_out(    mic_in,      0, mixer_out, MIC_MIXER_CHANNEL); //microphone straight to output atm
 
-AudioConnection mix2_left_to_out(mix2, 0, mix_out, 2);
-AudioConnection mix2_right_to_out(mix2, 1, mix_out, 3);
 
-
-AudioConnection output_left(mix_out, 0, headphones, 0);
-AudioConnection output_right(mix_out, 0, headphones, 1);
+//same signal sent to left and right (= mono audio out)
+AudioConnection headphones_out_L(mixer_out, 0, headphones, 0);
+AudioConnection headphones_out_R(mixer_out, 0, headphones, 1);
 
 
 // Create an object to control the audio shield.
@@ -78,17 +88,26 @@ Sound::Sound(){
   audioShield.enable();
   audioShield.volume(0.5);
 
-  // reduce the gain on mixer channels, so more than 1
+  // reduce the gain on wav sample player mixer channels, so more than 1
   // sound can play simultaneously without clipping
-  mix1.gain(0, 0.4);
-  mix1.gain(1, 0.4);
-  mix1.gain(2, 0.4);
-  mix1.gain(3, 0.4);
+  mixer_wav1.gain(0, 0.4); //wav1 left
+  mixer_wav1.gain(1, 0.4); //wav1 right
+  mixer_wav1.gain(2, 0.4); //wav2 left
+  mixer_wav1.gain(3, 0.4); //wav2 right
 
-  mix2.gain(0, 0.4);
-  mix2.gain(1, 0.4);
-  mix2.gain(2, 0.4);
-  mix2.gain(3, 0.4);
+  mixer_wav2.gain(0, 0.4); //wav3 left
+  mixer_wav2.gain(1, 0.4); //wav3 right
+  mixer_wav2.gain(2, 0.4); //metronome
+  // mixer_wav2.gain(3, 0.4); //currently unused channel
+
+
+  //set teensy audio board mic as input
+  audioShield.inputSelect(AUDIO_INPUT_MIC);
+  audioShield.micGain(40);
+
+  //set mic gain to 0 so we dont hear it constantly
+  mixer_out.gain(MIC_MIXER_CHANNEL, 0);
+
 
   Serial.println("Setup Audio");
 }
@@ -119,8 +138,8 @@ void Sound::play_file(const char *filename){
     playWav3.play(filename);
   }
   
-  // A brief delay for the library to read WAV info
-  delay(25);
+  // A brief delay for the library to read WAV info -- pnot sure if necessary so commented out for now
+  // delay(5);
 }
 
 void Sound::play_metronome(){
