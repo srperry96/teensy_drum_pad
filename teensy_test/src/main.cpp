@@ -4,7 +4,7 @@
 #include "SharedBits.h"
 
 #define POT_VOL A1
-#define POT2 A11
+#define POT2 A14
 #define POT3 A3
 #define POT4 A10
 
@@ -81,6 +81,7 @@ void loop() {
       sound.update_volume(pot1);
 
       if(wavegen.wave_playing){
+        AudioNoInterrupts();
         wavegen.set_filter_freq(pot2);
         wavegen.set_osc2_detune(pot3);
       
@@ -89,6 +90,7 @@ void loop() {
           wavegen.stop_osc2();
           wavegen.wave_playing = false;
         }
+        AudioInterrupts();
       }
 
       pot_check_millis = 0;
