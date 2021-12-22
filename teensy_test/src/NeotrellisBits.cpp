@@ -62,26 +62,31 @@ TrellisCallback pad_callback(keyEvent evt){
     neo.trellis.pixels.setPixelColor(evt.bit.NUM, neo.Wheel(map(evt.bit.NUM, 0, neo.trellis.pixels.numPixels(), 0, 255))); //on rising
     
     //set corresponding button states array element to 1, so we know which button has been pressed
-    neo.button_states[evt.bit.NUM] = 1;
-
+    neo.button_presses[evt.bit.NUM] = 1;    
+    
+    //reset timer for detecting a long press, which will take us to the main menu if held for 1.2secs
+    neo.button_hold_counter = 0;
     neo.held_button_id = evt.bit.NUM;
-    neo.button_hold_counter = millis();
+
 
   } else if (evt.bit.EDGE == SEESAW_KEYPAD_EDGE_FALLING) {
-  // or is the pad released?
-    neo.trellis.pixels.setPixelColor(evt.bit.NUM, 0); //off falling
-
-    //check if button was held for a long time?
-    if(millis() - neo.button_hold_counter > BUTTON_HOLD_LIMIT){
-      //button held
-      Serial.println("Button long pressed!!!");
-      menu.show_main_menu();
+    //turn the pad LED off when rel
+    neo.trellis.pixels.setPixelColor(evt.bit.NUM, 0);
+  
+    //if the held button has been released, we dont want to show main menu. Resetting the held button id means we are no longer tracking that long press.
+    if(neo.held_button_id == evt.bit.NUM){
+      //this bit shouldnt ever get reached
+      if(neo.button_hold_counter > 1500){
+        Serial.println("Released key was held for over 1.5secs, but wasnt detected properly");
+      }else{
+        neo.held_button_id = -1;
+      }
     }
 
-
+  
   }
 
-  // Turn on/off the neopixels!
+  //update neotrellis
   neo.trellis.pixels.show();
 
   return 0;

@@ -18,6 +18,8 @@ uint8_t pot_check_period = 10;
 Sound sound;
 
 void setup() {
+    // menu.drum_pad_mode();
+
     Serial.begin(9600);
 
     //Setup SD card. IMPORTANT: This has to be done here, not in another file / in the MicroSD constructor. Not entirely sure why but it works here.
@@ -29,8 +31,11 @@ void setup() {
     waveform_millis = 0;
     pot_check_millis = 0;
 
-}
 
+
+    menu.show_main_menu();
+
+}
 
 void loop() {
 
@@ -48,25 +53,42 @@ void loop() {
   
     //check pad states, play corresponding sample if needed
     for(btn_count = 0; btn_count < 16; btn_count++){
-      if(neo.button_states[btn_count] == 1){
-        if(pot4 < 500){ //THIS WILL BE CHANGED TO A PROPER COMPARISON AT SOME POINT. FOR NOW, TURNING POT4 SWITCHES MODES
+      if(neo.button_presses[btn_count] == 1){
+        if(menu.mode == MENU_MODE_DRUM_PAD){//pot4 < 500){ //THIS WILL BE CHANGED TO A PROPER COMPARISON AT SOME POINT. FOR NOW, TURNING POT4 SWITCHES MODES
           sound.play_pad_sample(btn_count);
-
-        //else play corresponding note    
-        }else{
-          if(!wavegen.wave_playing){
-            wavegen.start_osc1();
-            wavegen.start_osc2();
-            wavegen.wave_playing = true;
-          }
-          wavegen.play_pad_note(btn_count);
         }
+        // else if(menu.mode == MENU_MODE_OSCILLATOR){
+        //   // if(!wavegen.wave_playing){
+        //     wavegen.start_osc1();
+        //     wavegen.start_osc2();
+        //     wavegen.wave_playing = true;
+        //   // }
+        //   wavegen.play_pad_note(btn_count);
+        // }
+
+        // //else play corresponding note    
+        // }else if(menu.mode == MENU_MODE_OSCILLATOR){
+        //   if(!wavegen.wave_playing){
+        //     wavegen.start_osc1();
+        //     wavegen.start_osc2();
+        //     wavegen.wave_playing = true;
+        //   }
+        //   wavegen.play_pad_note(btn_count);
+        // }
 
         //reset the button state so we dont double play the sample
-        neo.button_states[btn_count] = 0;
+        neo.button_presses[btn_count] = 0;
       }
     }
     neotrellis_millis = 0;
+
+    //check if button has been held
+    if((neo.held_button_id != -1) && (neo.button_hold_counter > 1200)){
+      Serial.println("Held button down for over 1.2s - showing main menu");
+      neo.held_button_id = -1;
+      menu.show_main_menu();
+    }
+
   }
 
 
@@ -85,11 +107,11 @@ void loop() {
         wavegen.set_filter_freq(pot2);
         wavegen.set_osc2_detune(pot3);
       
-        if(pot4 < 500){
-          wavegen.stop_osc1();
-          wavegen.stop_osc2();
-          wavegen.wave_playing = false;
-        }
+        // if(pot4 < 500){
+        //   wavegen.stop_osc1();
+        //   wavegen.stop_osc2();
+        //   wavegen.wave_playing = false;
+        // }
         AudioInterrupts();
       }
 

@@ -32,7 +32,7 @@ float some_note_freqs[12] = {16.35, 17.32, 18.35, 19.45, 20.6, 21.83, 23.12, 24.
 
 float osc1freq = 80.0, osc2freq = 80.0;
 
-bool wave_playing = false;
+
 
 void WaveGenerator::start_osc1(){
     osc1.amplitude(0.4);

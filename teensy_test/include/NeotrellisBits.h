@@ -16,12 +16,12 @@ class Neotrellis{
         Adafruit_NeoTrellis trellis;
         const uint8_t neotrellis_period = 20; //neotrellis has a resolution of around 60hz
         
-        uint8_t button_states[16] = {0,0,0,0,
+        uint8_t button_presses[16] = {0,0,0,0,
                                      0,0,0,0,
                                      0,0,0,0,
                                      0,0,0,0};
 
-        unsigned int button_hold_counter = 0;
+        elapsedMillis button_hold_counter = 0;
         int8_t held_button_id = -1;
 
 };

@@ -24,7 +24,7 @@ class WaveGenerator
         void play_pad_note(int btn);
 
 
-        bool wave_playing;
+        bool wave_playing = false;
 
 };
 
