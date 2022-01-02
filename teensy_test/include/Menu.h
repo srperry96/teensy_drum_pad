@@ -18,6 +18,8 @@
 #define NAV_BACK 0
 #define NAV_SELECT 10
 
+#define BTN_BRIGHT 50
+#define BTN_DIM 25
 
 class Menu{
     public:
@@ -25,6 +27,8 @@ class Menu{
 
         void show_main_menu();
         void show_oscillator_menu();
+        void show_osc_values();
+
         
         void osc_mode();
         void looper_mode();
@@ -40,8 +44,9 @@ class Menu{
 
 
         void process_main_menu(uint16_t key);
-        void process_oscillator_input(uint16_t key);
+        void process_oscillator_input(uint16_t key, uint8_t stroke);
 
+        void move_menu(uint8_t direction);
 
 
         uint8_t mode = MENU_MODE_DRUM_PAD;

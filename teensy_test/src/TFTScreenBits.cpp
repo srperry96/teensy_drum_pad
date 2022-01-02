@@ -23,3 +23,11 @@ void TFTScreen::print_text(const char* text, uint8_t x, uint8_t y){
     tft.setCursor(x,y);
     tft.println(text);
 }
+
+void TFTScreen::cover_letter_with_rectangle(uint8_t x, uint8_t y){
+    tft.fillRect(x, y, 15, 18, ILI9341_BLACK);
+}
+
+void TFTScreen::cover_line_end(uint8_t x, uint8_t y){
+    tft.fillRect(x, y, 200, 18, ILI9341_BLACK);
+}

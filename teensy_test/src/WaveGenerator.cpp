@@ -23,34 +23,31 @@
 WaveGenerator wavegen;
 
 
-WaveGenerator::WaveGenerator(){}
-
-
-
-//from C0 to B0 (for every octave, we can double freq each time)
-float some_note_freqs[12] = {16.35, 17.32, 18.35, 19.45, 20.6, 21.83, 23.12, 24.5, 25.96, 27.5, 29.14, 30.87};
-
-float osc1freq = 80.0, osc2freq = 80.0;
-
-
-
 void WaveGenerator::start_osc1(){
     osc1.amplitude(0.4);
-    osc1.frequency(osc1freq);
-    osc1.begin(WAVEFORM_TRIANGLE);
+    osc1.frequency(osc1_freq);
+
+    //our wave shape list doesnt include all options. remaps 4 to be 6 here to include reverse sawtooth
+    if(waveshape == 4){
+        osc1.begin(6);
+    }else{
+        osc1.begin(waveshape);
+    }
 }
 
 void WaveGenerator::start_osc2(){
     osc2.amplitude(0.4);
-    osc2.frequency(osc2freq);
-    osc2.begin(WAVEFORM_TRIANGLE);
+    osc2.frequency(osc2_freq);
+    
+    if(waveshape == 4){
+        osc1.begin(6);
+    }else{
+        osc1.begin(waveshape);
+    }    
 }
 
 void WaveGenerator::set_freq(int note){
-    // int scaled = map(freq, 0, 1023, 0, 11);
-    int octave = 2;
-
-    float freq_new = some_note_freqs[note];
+    float freq_new = note_freqs[note];
 
     //double the frequency for each octave we want to go up
     //this may be a slightly hacky way to do it. Should probs add a lookup table with all notes at some point
@@ -59,15 +56,13 @@ void WaveGenerator::set_freq(int note){
     }
 
     osc1.frequency(freq_new);
-    // osc2.frequency(freq_new);
-
-    osc1freq = freq_new;
-    // osc2freq = freq_new;
+    osc1_freq = freq_new;
 }
 
 void WaveGenerator::set_filter_freq(int freq){
-    int scaled = map(freq, 0, 1023, 0, 8000);
+    int scaled = map(freq, 0, 1023, 60, 6000);
     osc_filter1.frequency(scaled);
+    low_pass_val = scaled;
 }
 
 void WaveGenerator::stop_osc1(){
@@ -78,15 +73,27 @@ void WaveGenerator::stop_osc2(){
     osc2.amplitude(0);
 }
 
+void WaveGenerator::set_distortion(int val){
+    int mapped_val = map(val, 0, 1023, 250, 10000);
+
+    osc_dist.gain(mapped_val/100.0);
+    osc_dist_limiter.gain(0.4);
+
+    overdrive_val = mapped_val/100.0;
+}
+
 void WaveGenerator::set_osc2_detune(int detune){
     int scaled = map(detune, 0, 1023, 0, 100);
     float scaled2 = scaled / 100.0;
-    float detuneVal = 1.0 - (0.04 * scaled2);
+    float detune_percent = 1.0 - (0.04 * scaled2);
 
     
-    osc2freq = osc1freq * detuneVal;
+    osc2_freq = osc1_freq * detune_percent;
 
-    osc2.frequency(osc2freq);
+    osc2.frequency(osc2_freq);
+
+
+    detune_val = detune_percent;
 
 }
 
@@ -118,6 +125,5 @@ void WaveGenerator::play_pad_note(int btn){
                     break;
         case 7:     set_freq(B_0);
                     break;
-        default:    break;   
     }
 }

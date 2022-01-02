@@ -54,19 +54,19 @@ AudioFilterStateVariable osc_filter1;
 AudioConnection osc1_to_mixer_osc(osc1, 0, mixer_osc, 0);
 AudioConnection osc2_to_mixer_osc(osc2, 0, mixer_osc, 1);
 
-//combined osc1 and osc2 to filter
-AudioConnection mixer_osc_to_filter(mixer_osc, 0, osc_filter1, 0);
-//probs want to add a connection between mixer_osc and filter for distortion
-//probs just an amplifier that overdrives it (could add bitcrush too)
-
-
+//Distortion (overdrive) into
+AudioAmplifier osc_dist;
+AudioAmplifier osc_dist_limiter;
+AudioConnection mixer_osc_to_dist(mixer_osc, 0, osc_dist, 0);
+AudioConnection mixer_osc_to_dist2(osc_dist, 0, osc_dist_limiter, 0);
+AudioConnection mixer_osc_to_filter(osc_dist_limiter, 0, osc_filter1, 0);
 
 
 //output mixer connections
-AudioConnection wavs1_to_mixer_out(  mixer_wav1,  0, mixer_out, 0); //wav samples 1 and 2 to output
-AudioConnection wavs2_to_mixer_out(  mixer_wav2,  0, mixer_out, 1); //wav samples 3 and metronome to output
-AudioConnection wavegen_to_mixer_out(osc_filter1, 0, mixer_out, 2); //wave generator to output
-AudioConnection mic_to_mixer_out(    mic_in,      0, mixer_out, MIC_MIXER_CHANNEL); //microphone straight to output atm
+AudioConnection wavs1_to_mixer_out(    mixer_wav1,  0, mixer_out, 0); //wav samples 1 and 2 to output
+AudioConnection wavs2_to_mixer_out(    mixer_wav2,  0, mixer_out, 1); //wav samples 3 and metronome to output
+AudioConnection wavegen_to_mixer_out(  osc_filter1, 0, mixer_out, 2); //wave generator to output
+AudioConnection mic_to_mixer_out(      mic_in,      0, mixer_out, MIC_MIXER_CHANNEL); //microphone straight to output atm
 
 
 //same signal sent to left and right (= mono audio out)
@@ -79,9 +79,6 @@ AudioControlSGTL5000 audioShield;
 
 
 Sound::Sound(){
-
-  // Audio connections require memory to work.  For more
-  // detailed information, see the MemoryAndCpuUsage example
   AudioMemory(12);
 
   // turn on the output
@@ -107,7 +104,6 @@ Sound::Sound(){
 
   //set mic gain to 0 so we dont hear it constantly
   mixer_out.gain(MIC_MIXER_CHANNEL, 0);
-
 
   Serial.println("Setup Audio");
 }

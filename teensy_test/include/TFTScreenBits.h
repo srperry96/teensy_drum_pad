@@ -19,7 +19,9 @@ class TFTScreen{
         TFTScreen();
         void clear();
         void print_text(const char* text, uint8_t x, uint8_t y);
-        
+        void cover_letter_with_rectangle(uint8_t x, uint8_t y);
+        void cover_line_end(uint8_t x, uint8_t y);
+    
     private:
         static ILI9341_t3 tft;
 

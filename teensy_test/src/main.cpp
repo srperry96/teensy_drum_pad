@@ -8,7 +8,7 @@
 #define POT3 A3
 #define POT4 A10
 
-elapsedMillis neotrellis_millis, tempo_millis, waveform_millis, pot_check_millis;
+elapsedMillis neotrellis_millis, tempo_millis, waveform_millis, pot_check_millis, screen_update_millis;
 
 
 uint8_t btn_count = 0;
@@ -18,8 +18,6 @@ uint8_t pot_check_period = 10;
 Sound sound;
 
 void setup() {
-    // menu.drum_pad_mode();
-
     Serial.begin(9600);
 
     //Setup SD card. IMPORTANT: This has to be done here, not in another file / in the MicroSD constructor. Not entirely sure why but it works here.
@@ -30,8 +28,7 @@ void setup() {
     tempo_millis = 0;
     waveform_millis = 0;
     pot_check_millis = 0;
-
-
+    screen_update_millis = 0;
 
     menu.show_main_menu();
 
@@ -57,24 +54,6 @@ void loop() {
         if(menu.mode == MENU_MODE_DRUM_PAD){//pot4 < 500){ //THIS WILL BE CHANGED TO A PROPER COMPARISON AT SOME POINT. FOR NOW, TURNING POT4 SWITCHES MODES
           sound.play_pad_sample(btn_count);
         }
-        // else if(menu.mode == MENU_MODE_OSCILLATOR){
-        //   // if(!wavegen.wave_playing){
-        //     wavegen.start_osc1();
-        //     wavegen.start_osc2();
-        //     wavegen.wave_playing = true;
-        //   // }
-        //   wavegen.play_pad_note(btn_count);
-        // }
-
-        // //else play corresponding note    
-        // }else if(menu.mode == MENU_MODE_OSCILLATOR){
-        //   if(!wavegen.wave_playing){
-        //     wavegen.start_osc1();
-        //     wavegen.start_osc2();
-        //     wavegen.wave_playing = true;
-        //   }
-        //   wavegen.play_pad_note(btn_count);
-        // }
 
         //reset the button state so we dont double play the sample
         neo.button_presses[btn_count] = 0;
@@ -99,22 +78,22 @@ void loop() {
       pot3 = analogRead(POT3);
       pot4 = analogRead(POT4);
 
-
       sound.update_volume(pot1);
 
-      if(wavegen.wave_playing){
+      if(menu.mode == MENU_MODE_OSCILLATOR){
+
         AudioNoInterrupts();
         wavegen.set_filter_freq(pot2);
         wavegen.set_osc2_detune(pot3);
-      
-        // if(pot4 < 500){
-        //   wavegen.stop_osc1();
-        //   wavegen.stop_osc2();
-        //   wavegen.wave_playing = false;
-        // }
+        wavegen.set_distortion(pot4);
         AudioInterrupts();
+      
+        pot_check_millis = 0;
       }
+    }
 
-      pot_check_millis = 0;
-  }
+    if((screen_update_millis > 40) && (menu.mode == MENU_MODE_OSCILLATOR)){
+      menu.show_osc_values();
+      screen_update_millis = 0;
+    }
 }

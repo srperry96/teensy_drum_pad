@@ -62,7 +62,7 @@ TrellisCallback pad_callback(keyEvent evt){
     neo.trellis.pixels.setPixelColor(evt.bit.NUM, neo.Wheel(map(evt.bit.NUM, 0, neo.trellis.pixels.numPixels(), 0, 255))); //on rising
     
     //set corresponding button states array element to 1, so we know which button has been pressed
-    neo.button_presses[evt.bit.NUM] = 1;    
+    neo.button_presses[evt.bit.NUM] = 1;
     
     //reset timer for detecting a long press, which will take us to the main menu if held for 1.2secs
     neo.button_hold_counter = 0;
