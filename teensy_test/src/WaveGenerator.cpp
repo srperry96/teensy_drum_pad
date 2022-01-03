@@ -23,6 +23,11 @@
 WaveGenerator wavegen;
 
 
+WaveGenerator::WaveGenerator(){
+    //set distortion limiter
+    osc_dist_limiter.gain(0.4);
+}
+
 void WaveGenerator::start_osc1(){
     osc1.amplitude(0.4);
     osc1.frequency(osc1_freq);
@@ -33,6 +38,7 @@ void WaveGenerator::start_osc1(){
     }else{
         osc1.begin(waveshape);
     }
+
 }
 
 void WaveGenerator::start_osc2(){
@@ -40,10 +46,18 @@ void WaveGenerator::start_osc2(){
     osc2.frequency(osc2_freq);
     
     if(waveshape == 4){
-        osc1.begin(6);
+        osc2.begin(6);
     }else{
-        osc1.begin(waveshape);
+        osc2.begin(waveshape);
     }    
+}
+
+void WaveGenerator::stop_osc1(){
+    osc1.amplitude(0);
+}
+
+void WaveGenerator::stop_osc2(){
+    osc2.amplitude(0);
 }
 
 void WaveGenerator::set_freq(int note){
@@ -57,29 +71,30 @@ void WaveGenerator::set_freq(int note){
 
     osc1.frequency(freq_new);
     osc1_freq = freq_new;
+
+    osc2_freq = osc1_freq * detune_val;
+    osc2.frequency(osc2_freq);
 }
 
 void WaveGenerator::set_filter_freq(int freq){
-    int scaled = map(freq, 0, 1023, 60, 6000);
-    osc_filter1.frequency(scaled);
-    low_pass_val = scaled;
+    //* 10 after the map here limits resolution to 10Hz
+    int scaled = map(freq, 0, 1023, 4, 600) * 10;
+
+    //update the value if it has changed
+    if(scaled != low_pass_val){
+        osc_filter1.frequency(scaled);
+        low_pass_val = scaled;
+    }
 }
 
-void WaveGenerator::stop_osc1(){
-    osc1.amplitude(0);
-}
+void WaveGenerator::set_overdrive(int val){
+    int mapped_val = map(val, 0, 1023, 1, 50);
 
-void WaveGenerator::stop_osc2(){
-    osc2.amplitude(0);
-}
-
-void WaveGenerator::set_distortion(int val){
-    int mapped_val = map(val, 0, 1023, 250, 10000);
-
-    osc_dist.gain(mapped_val/100.0);
-    osc_dist_limiter.gain(0.4);
-
-    overdrive_val = mapped_val/100.0;
+    //update the value if it has changed
+    if(mapped_val != overdrive_val){
+        osc_dist.gain(mapped_val);
+        overdrive_val = mapped_val;
+    }
 }
 
 void WaveGenerator::set_osc2_detune(int detune){
@@ -87,14 +102,10 @@ void WaveGenerator::set_osc2_detune(int detune){
     float scaled2 = scaled / 100.0;
     float detune_percent = 1.0 - (0.04 * scaled2);
 
-    
     osc2_freq = osc1_freq * detune_percent;
-
     osc2.frequency(osc2_freq);
 
-
     detune_val = detune_percent;
-
 }
 
 void WaveGenerator::play_pad_note(int btn){

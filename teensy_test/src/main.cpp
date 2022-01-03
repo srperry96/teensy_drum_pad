@@ -30,7 +30,7 @@ void setup() {
     pot_check_millis = 0;
     screen_update_millis = 0;
 
-    menu.show_main_menu();
+    menu.main_menu_mode();
 
 }
 
@@ -65,7 +65,7 @@ void loop() {
     if((neo.held_button_id != -1) && (neo.button_hold_counter > 1200)){
       Serial.println("Held button down for over 1.2s - showing main menu");
       neo.held_button_id = -1;
-      menu.show_main_menu();
+      menu.main_menu_mode();
     }
 
   }
@@ -85,15 +85,16 @@ void loop() {
         AudioNoInterrupts();
         wavegen.set_filter_freq(pot2);
         wavegen.set_osc2_detune(pot3);
-        wavegen.set_distortion(pot4);
+        wavegen.set_overdrive(pot4);
         AudioInterrupts();
       
         pot_check_millis = 0;
       }
     }
 
-    if((screen_update_millis > 40) && (menu.mode == MENU_MODE_OSCILLATOR)){
-      menu.show_osc_values();
+    //Updating screen values at 20Hz when required
+    if((screen_update_millis > 50)){
+      screen.update();
       screen_update_millis = 0;
     }
 }

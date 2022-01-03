@@ -15,6 +15,7 @@
 class WaveGenerator
 {
     public:
+        WaveGenerator();
         void start_osc1();
         void start_osc2();
 
@@ -25,7 +26,7 @@ class WaveGenerator
         void stop_osc1();
         void stop_osc2();
 
-        void set_distortion(int val);
+        void set_overdrive(int val);
 
 
         void set_filter_freq(int freq);
@@ -39,14 +40,17 @@ class WaveGenerator
         uint8_t octave = 2;
 
         int low_pass_val;
+        int overdrive_val;
         float detune_val;
-        float overdrive_val;
 
-        float osc1_freq = 80.0;
-        float osc2_freq = 80.0;
+        float osc1_freq;
+        float osc2_freq;
 
         //from C0 to B0 (for every octave, we can double freq each time)
         float note_freqs[12] = {16.35, 17.32, 18.35, 19.45, 20.6, 21.83, 23.12, 24.5, 25.96, 27.5, 29.14, 30.87};
+
+        //previous used for comparison so we dont constantly update the screen with the same information
+        float prev_osc_vals[5] = {-1, -1, -1, -1, -1};
 
 };
 

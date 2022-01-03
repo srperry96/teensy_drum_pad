@@ -13,7 +13,6 @@
 #define TFT_SCLK    14
 #define TFT_MISO    12
 
-
 class TFTScreen{
     public:
         TFTScreen();
@@ -21,9 +20,12 @@ class TFTScreen{
         void print_text(const char* text, uint8_t x, uint8_t y);
         void cover_letter_with_rectangle(uint8_t x, uint8_t y);
         void cover_line_end(uint8_t x, uint8_t y);
-    
+        void update();
+
     private:
         static ILI9341_t3 tft;
+        uint16_t bg_color = ILI9341_BLACK;
+        uint16_t text_color = ILI9341_GREEN;
 
 };
 

@@ -25,15 +25,15 @@ Menu menu;
 Menu::Menu(){}
 
 
-String main_menu_items[6] = {"Drum Pad", "Set Drum Pad Sounds", "Oscillator", "Looper", "Step Sequencer", "Metronome"};
-String osc_menu_items[5] = {"Wave Shape", "Octave", "LP Filter", "Detune", "Overdrive"};
+String main_menu_items[6] = {"Drum Pad", "Set Drum Pad Sounds", "Oscillator", "(Rec)Looper", "Step Sequencer", "Metronome"};
+String osc_menu_items[5] = {"Wave Shape", "Octave", "LP Filter", "Osc2 Detune", "Overdrive"};
 
 
 
-void Menu::show_main_menu(){
-    show_trellis_navigation_controls();
-
+void Menu::main_menu_mode(){
     mode = MENU_MODE_MAIN;
+
+    show_trellis_navigation_controls();
 
     String temp;
     menu_length = sizeof(main_menu_items) / 16; // divide by 16 bits (size per string)
@@ -119,77 +119,18 @@ void Menu::osc_mode(){
 
     neo.trellis.pixels.show();
 
+    //reset previous osc values array to ensure we print them out this time (divide by 4 bytes per float to get length of the array)
+    for(uint16_t i = 0; i < sizeof(wavegen.prev_osc_vals) / 4; i++){
+        wavegen.prev_osc_vals[i] = -1.0;
+    }
+
     show_oscillator_menu();
 }
-
-void Menu::process_oscillator_input(uint16_t key, uint8_t stroke){
-    if(key == 0){
-        //stop oscillator, then show main menu
-        if(wavegen.wave_playing){
-            wavegen.stop_osc1();
-            wavegen.stop_osc2();
-            wavegen.wave_playing = false;
-        }
-        menu.show_main_menu();
-    }else if((key == 1) && (stroke == SEESAW_KEYPAD_EDGE_RISING)){
-        //CYCLE THROUGH WAVESHAPES
-        wavegen.waveshape++;
-        if(wavegen.waveshape > wavegen.num_waveshapes - 1){
-            wavegen.waveshape = 0;
-        }
-        
-        if(wavegen.wave_playing){
-            wavegen.start_osc1();
-            wavegen.start_osc2();
-        }
-
-        show_osc_values();
-
-    //OCTAVE DOWN
-    }else if((key == 2) && (stroke == SEESAW_KEYPAD_EDGE_RISING)){
-        if(wavegen.octave > 0){
-            wavegen.octave--;
-        }
-        show_osc_values();
-
-    //OCTAVE UP
-    }else if((key == 3) && (stroke == SEESAW_KEYPAD_EDGE_RISING)){
-        if(wavegen.octave < 7){
-            wavegen.octave++;
-        }
-        show_osc_values();
-
-    }else if(key >= 4){
-        if(stroke == SEESAW_KEYPAD_EDGE_RISING){
-            //start oscillator if not already playing
-            if(!wavegen.wave_playing){
-                wavegen.start_osc1();
-                wavegen.start_osc2();
-                wavegen.wave_playing = true;
-            }
-            //play corresponding note
-            wavegen.play_pad_note(key);
-        }else{
-//COMMENT OUT THE BELOW STUFF TO MAKE THE OSCILLATORS TURN OFF WHEN THE KEY IS RELEASED
-            
-            // wavegen.stop_osc1();
-            // wavegen.stop_osc2();
-            // wavegen.wave_playing = false;
-        }
-    }
-   
-    //key 0 = back to main menu
-    //key 1 = cycle through waveshapes, updates image on screen
-    //key 2,3 = octave down/up
-    //key 4-15 = notes c through b, played like a keyboard - play oscillator when held, turn off when released
-
-}
-
 
 
 void Menu::show_oscillator_menu(){
     screen.clear();
-    screen.print_text("Oscillator", 100, 0);
+    screen.print_text("Oscillator (2ch)", 70, 0);
     screen.print_text("--------------------------", 3, 20);
     
     for(uint8_t i = 0; i < (sizeof(osc_menu_items) / 16); i++){
@@ -199,47 +140,136 @@ void Menu::show_oscillator_menu(){
 }
 
 
-//draw values for oscillator params
-void Menu::show_osc_values(){
-    char temp[16];
+void Menu::process_oscillator_input(uint16_t key, uint8_t stroke){
+    //Return to main menu, stopping oscillator
+    if(key == 0){
+        //if oscillators are playing, stop them
+        if(wavegen.wave_playing){
+            wavegen.stop_osc1();
+            wavegen.stop_osc2();
+            wavegen.wave_playing = false;
+        }
+        menu.main_menu_mode();
+        return;
     
-    switch(wavegen.waveshape){
-        //sin
-        case 0 :    sprintf(temp, "Sin");
-                    break;
-        //sawtooth
-        case 1 :    sprintf(temp, "Saw");
-                    break;
-        //square
-        case 2 :    sprintf(temp, "Square");
-                    break;
-        //triangle
-        case 3 :    sprintf(temp, "Triangle");
-                    break;
-        //sawtooth reverse
-        case 4 :    sprintf(temp, "Rev Saw");
-                    break;
+    //Cycle through the wave shape options
+    }else if((key == 1) && (stroke == SEESAW_KEYPAD_EDGE_RISING)){
+        //increment waveshape ID, ensuring we stay within the limits of the list of waveshapes
+        wavegen.waveshape++;
+        if(wavegen.waveshape > wavegen.num_waveshapes - 1){
+            wavegen.waveshape = 0;
+        }
+        
+        //if oscillator is playing, we must restart it for the change to take effect
+        if(wavegen.wave_playing){
+            wavegen.start_osc1();
+            wavegen.start_osc2();
+        }
+
+    //Octave down - limit of octave 0 for obvious reasons
+    }else if((key == 2) && (stroke == SEESAW_KEYPAD_EDGE_RISING)){
+        if(wavegen.octave > 0){
+            wavegen.octave--;
+        }
+
+    //Octave up - limit of 7 stops us going to horribly high pitches
+    }else if((key == 3) && (stroke == SEESAW_KEYPAD_EDGE_RISING)){
+        if(wavegen.octave < 7){
+            wavegen.octave++;
+        }
+
+    //Play the corresponding note
+    }else if(key >= 4){
+        //if the key is pushed, we want a note to play
+        if(stroke == SEESAW_KEYPAD_EDGE_RISING){
+            if(!wavegen.wave_playing){
+                wavegen.start_osc1();
+                wavegen.start_osc2();
+                wavegen.wave_playing = true;
+            }
+            wavegen.play_pad_note(key);
+        
+        //else if the key is being released, we want to stop playing? STILL UNDECIDED
+        }else{
+//COMMENT OUT THE BELOW FEW LINES TO MAKE THE OSCILLATORS TURN OFF WHEN THE KEY IS RELEASED (RESULTS IN A LOT OF CRACKLING SOUNDS)
+//--- to make this work properly, would need to keep track of the note thats playing. If that note is the key that is released, then we stop. 
+//                                                                                    Otherwise continue playing, as a new note has been pressed.
+//ie:
+    //if osc1 freq == CORRESPONDING FREQUENCY FOR THAT BUTTON{stop oscillators}; else do nothing;
+    //this will not work for frequencies in different octaves. easiest way will probably be doable once we have a lookup table for all the notes C0 through C7
+       
+            // wavegen.stop_osc1();
+            // wavegen.stop_osc2();
+            // wavegen.wave_playing = false;
+        }
     }
 
-    screen.cover_line_end(200, 40);
-    screen.print_text(temp, 200, 40);
-
-    sprintf(temp, "%d", wavegen.octave);
-    screen.cover_line_end(200, 60);
-    screen.print_text(temp, 200, 60);
+    //update all the values on screen
+    show_osc_values();
+}
 
 
-    sprintf(temp, "%d", wavegen.low_pass_val);
-    screen.cover_line_end(200, 80);
-    screen.print_text(temp, 200, 80);
+//draw values for oscillator params
+void Menu::show_osc_values(){
+    const uint16_t xpos = 160;
+    char temp[16];
+    
+    if(wavegen.waveshape != wavegen.prev_osc_vals[0]){
+        switch(wavegen.waveshape){
+            //sin
+            case 0 :    sprintf(temp, "Sin ~~");
+                        break;
+            //sawtooth
+            case 1 :    sprintf(temp, "Saw /|/|");
+                        break;
+            //square
+            case 2 :    sprintf(temp, "Square |_|-|");
+                        break;
+            //triangle
+            case 3 :    sprintf(temp, "Triangle /\\/\\");
+                        break;
+            //sawtooth reverse
+            case 4 :    sprintf(temp, "Rev Saw |\\|\\");
+                        break;
+        }
 
-    sprintf(temp, "%.2f", wavegen.detune_val);
-    screen.cover_line_end(200, 100);
-    screen.print_text(temp, 200, 100);
+        screen.cover_line_end(xpos, 40);
+        screen.print_text(temp, xpos, 40);
 
-    sprintf(temp, "%.2f", wavegen.overdrive_val);
-    screen.cover_line_end(200, 120);
-    screen.print_text(temp, 200, 120);
+        wavegen.prev_osc_vals[0] = wavegen.waveshape;
+    }
+
+    if(wavegen.octave != wavegen.prev_osc_vals[1]){
+        sprintf(temp, "%d", wavegen.octave);
+        screen.cover_line_end(xpos, 60);
+        screen.print_text(temp, xpos, 60);
+
+        wavegen.prev_osc_vals[1] = wavegen.octave;
+    }
+
+    if(wavegen.low_pass_val != wavegen.prev_osc_vals[2]){
+        sprintf(temp, "%d", wavegen.low_pass_val);
+        screen.cover_line_end(xpos, 80);
+        screen.print_text(temp, xpos, 80);
+
+        wavegen.prev_osc_vals[2] = wavegen.low_pass_val;
+    }
+
+    if(wavegen.detune_val != wavegen.prev_osc_vals[3]){
+        sprintf(temp, "%.3f", wavegen.detune_val);
+        screen.cover_line_end(xpos, 100);
+        screen.print_text(temp, xpos, 100);
+
+        wavegen.prev_osc_vals[3] = wavegen.detune_val;
+    }
+
+    if(wavegen.overdrive_val != wavegen.prev_osc_vals[4]){
+        sprintf(temp, "%d", wavegen.overdrive_val);
+        screen.cover_line_end(xpos, 120);
+        screen.print_text(temp, xpos, 120);
+
+        wavegen.prev_osc_vals[4] = wavegen.overdrive_val;
+    }
 
 }
 
@@ -302,17 +332,13 @@ void Menu::process_main_menu(uint16_t key){
         if(menu.selection_id > 0){
             menu.selection_id--;
             menu.move_menu(0);
-            // menu.show_main_menu();
         }
-        
     //move down the menu on screen (up in numbers)
     }else if(key == NAV_DOWN){
         if(menu.selection_id < menu.menu_length - 1){
             menu.selection_id++;
             menu.move_menu(1);
-            // menu.show_main_menu();
         }
-    
     //process selected menu option
     }else if(key == NAV_SELECT){
         switch(menu.selection_id + 1){ //+ 1 required here as MENU_MODE_MAIN is the 0 value in our main menu array
@@ -326,12 +352,10 @@ void Menu::process_main_menu(uint16_t key){
                                             break;
             case MENU_MODE_STEP_SEQUENCER : menu.step_sequencer_mode();
                                             break;
-            case MENU_MODE_STEP_METRONOME : menu.metronome_mode();
+            case MENU_MODE_METRONOME :      menu.metronome_mode();
                                             break;
         }
-
-    
-    //go back to drum pad if in the main menu
+    //go back to drum pad mode
     }else if(key == NAV_BACK){
         menu.drum_pad_mode();
     }
@@ -341,22 +365,83 @@ void Menu::process_main_menu(uint16_t key){
 
 
 void Menu::set_samples_mode(){
+    // mode = MENU_MODE_SET_SAMPLES;
     screen.clear();
     screen.print_text("set samples mode to be added", 0, 0);
 }
 
 
 void Menu::step_sequencer_mode(){
+    // mode = MENU_MODE_STEP_SEQUENCER;
     screen.clear();
     screen.print_text("step seq mode to be added", 0, 0);
 }
 
 void Menu::looper_mode(){
+    mode = MENU_MODE_LOOPER;
     screen.clear();
-    screen.print_text("looper mode to be added", 0, 0);
+    screen.print_text("looper mode. hold to record", 0, 0);
+
+    //attach new callback to keypad
+    for(int i = 0; i < NEO_TRELLIS_NUM_KEYS; i++){
+        neo.trellis.unregisterCallback(i);
+        neo.trellis.registerCallback(i, navigation_callback);
+        neo.trellis.pixels.setPixelColor(i, 0, 0, 0);
+    }
+
+    neo.trellis.pixels.setPixelColor(0, BTN_DIM, 0, 0);
+    neo.trellis.pixels.setPixelColor(1, 0, 0, BTN_DIM);
+
+    neo.trellis.pixels.show();
 }
 
+
+TrellisCallback looper_callback(keyEvent evt){
+//alter lights to give some feedback when a button is pressed / released
+    if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING){
+        if(evt.bit.NUM == 0){
+            neo.trellis.pixels.setPixelColor(evt.bit.NUM, BTN_BRIGHT, 0, 0);
+        }else if(evt.bit.NUM == 1){
+            neo.trellis.pixels.setPixelColor(evt.bit.NUM, 0, 0, BTN_BRIGHT);
+        }
+    }else if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_FALLING){
+        if(evt.bit.NUM == 0){
+            neo.trellis.pixels.setPixelColor(evt.bit.NUM, BTN_DIM, 0, 0);
+        }else if(evt.bit.NUM == 1){
+            neo.trellis.pixels.setPixelColor(evt.bit.NUM, 0, 0, BTN_DIM);
+        }
+    }
+
+    neo.trellis.pixels.show();
+
+
+//now do stuff with the input (only when the button is pressed, not on release)
+    if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING){
+        menu.process_looper_input(evt.bit.NUM, SEESAW_KEYPAD_EDGE_RISING);
+    }
+
+    return 0;
+}
+
+void Menu::process_looper_input(uint16_t key, uint8_t stroke){
+    if(key == 0){
+        menu.main_menu_mode();
+        return;
+    }else if(key == 1){
+        //TODO: WRITE THE LOOPER CODE. FIRST JOB IS TO TEST RECORDING TO SD CARD
+            
+    }
+}
+
+
+
+
+
+
+
+
 void Menu::metronome_mode(){
+    // mode = MENU_MODE_METRONOME;
     screen.clear();
     screen.print_text("Metronome mode to be added", 0, 0);
 }
@@ -373,16 +458,12 @@ void Menu::drum_pad_mode(){
     }
     neo.trellis.pixels.show();
 
-    show_drum_pad_screen();
-}
-
-void Menu::show_drum_pad_screen(){
+    //show drum pad screen
     screen.clear();
     screen.print_text("Big Beatz Machine", 60, 0);
     screen.print_text("--------------------------", 3, 20);
     screen.print_text("Hold any pad for main menu (>1.2s)", 20, 60);
 }
-
 
 
 void Menu::show_trellis_navigation_controls(){
