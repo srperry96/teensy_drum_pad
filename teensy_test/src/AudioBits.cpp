@@ -1,4 +1,5 @@
 #include "AudioBits.h"
+#include "SharedBits.h"
 
 //mixers to take in wav file signals
 AudioMixer4        mixer_wav1;
@@ -66,7 +67,7 @@ AudioConnection mixer_osc_to_filter(osc_dist_limiter, 0, osc_filter1, 0);
 AudioConnection wavs1_to_mixer_out(    mixer_wav1,  0, mixer_out, 0); //wav samples 1 and 2 to output
 AudioConnection wavs2_to_mixer_out(    mixer_wav2,  0, mixer_out, 1); //wav samples 3 and metronome to output
 AudioConnection wavegen_to_mixer_out(  osc_filter1, 0, mixer_out, 2); //wave generator to output
-AudioConnection mic_to_mixer_out(      mic_in,      0, mixer_out, MIC_MIXER_CHANNEL); //microphone straight to output atm
+// AudioConnection mic_to_mixer_out(      mic_in,      0, mixer_out, MIC_MIXER_CHANNEL); //microphone straight to output atm
 
 
 //same signal sent to left and right (= mono audio out)
@@ -74,12 +75,28 @@ AudioConnection headphones_out_L(mixer_out, 0, headphones, 0);
 AudioConnection headphones_out_R(mixer_out, 0, headphones, 1);
 
 
+
+//TESTING OUT RECORDING FOR THE EVENTUAL LOOPER
+AudioRecordQueue queue1;
+AudioPlaySdRaw   playRaw1;
+AudioConnection  rec_conn1(mic_in, 0, queue1, 0);
+
+AudioMixer4           mixer_loop;
+
+AudioConnection          playrawR_to_mixerloop(playRaw1, 0, mixer_loop, 0);
+AudioConnection          playrawL_to_mixerloop(playRaw1, 0, mixer_loop, 1);
+AudioConnection           mic_to_mixer_loop(mic_in, 0, mixer_loop, 2);
+
+//mixer loop to output mixer channel 3
+AudioConnection mixer_loop_to_mixer_out(mixer_loop, 0, mixer_out, 3);
+
 // Create an object to control the audio shield.
 AudioControlSGTL5000 audioShield;
 
+Sound sound;
 
 Sound::Sound(){
-  AudioMemory(12);
+  AudioMemory(80);
 
   // turn on the output
   audioShield.enable();
@@ -98,12 +115,11 @@ Sound::Sound(){
   // mixer_wav2.gain(3, 0.4); //currently unused channel
 
 
+  mixer_loop.gain(2, 0);
+
   //set teensy audio board mic as input
   audioShield.inputSelect(AUDIO_INPUT_MIC);
   audioShield.micGain(40);
-
-  //set mic gain to 0 so we dont hear it constantly
-  mixer_out.gain(MIC_MIXER_CHANNEL, 0);
 
   Serial.println("Setup Audio");
 }
@@ -154,4 +170,92 @@ void Sound::update_volume(uint16_t new_vol){
     if(!((current_volume > new_vol - 2) && (current_volume < new_vol + 2))){
       set_volume(new_vol);
     }
+}
+
+
+
+
+
+//LOOPER BITS BELOW
+
+void Sound::startPlaying() {
+  Serial.println("startPlaying");
+  playRaw1.play("RECORD.RAW");
+  loopermode = 2;
+}
+
+void Sound::continuePlaying() {
+  if (!playRaw1.isPlaying()) {
+    // playRaw1.stop();
+    // loopermode = 0;
+    Serial.println("Finished.Should loop now");
+    startPlaying();
+  }
+}
+
+void Sound::stopPlaying() {
+  Serial.println("stopPlaying");
+  if (loopermode == 2) playRaw1.stop();
+  loopermode = 0;
+}
+
+
+void Sound::startRecording() {
+  Serial.println("startRecording");
+  mixer_loop.gain(2, 0.5);
+  if (SD.exists("RECORD.RAW")) {
+    // The SD library writes new data to the end of the
+    // file, so to start a new recording, the old file
+    // must be deleted before new data is written.
+    SD.remove("RECORD.RAW");
+  }
+  frec = SD.open("RECORD.RAW", FILE_WRITE);
+  if (frec) {
+    queue1.begin();
+    loopermode = 1;
+  }
+}
+
+
+void Sound::continueRecording() {
+  if (queue1.available() >= 2) {
+    byte buffer[512];
+    // Fetch 2 blocks from the audio library and copy
+    // into a 512 byte buffer.  The Arduino SD library
+    // is most efficient when full 512 byte sector size
+    // writes are used.
+    memcpy(buffer, queue1.readBuffer(), 256);
+    queue1.freeBuffer();
+    memcpy(buffer+256, queue1.readBuffer(), 256);
+    queue1.freeBuffer();
+
+    // write all 512 bytes to the SD card
+    frec.write(buffer, 512);
+
+  }
+}
+
+void Sound::stopRecording() {
+  Serial.println("stopRecording");
+  queue1.end();
+  if (loopermode == 1) {
+    while (queue1.available() > 0) {
+      frec.write((byte*)queue1.readBuffer(), 256);
+      queue1.freeBuffer();
+    }
+    frec.close();
+  }
+  loopermode = 0;
+  mixer_loop.gain(2, 0);
+
+}
+
+void Sound::looper_loop(){
+  if(loopermode == 1){
+      continueRecording();
+  }
+
+  if(loopermode == 2){
+    continuePlaying();
+  }
 }

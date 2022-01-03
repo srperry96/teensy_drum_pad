@@ -33,6 +33,7 @@ class Menu{
 
 
         void drum_pad_mode();
+        void process_drum_pad_input();
 
 
         void osc_mode();
@@ -43,7 +44,6 @@ class Menu{
                 
         void looper_mode();
         void process_looper_input(uint16_t key, uint8_t stroke);
-
 
         void set_samples_mode();
 

@@ -2,10 +2,6 @@
 #define __AUDIOBITS_H__
 
 #include <Audio.h>
-#include "Metronome.h"
-#include "SharedBits.h"
-
-#define MIC_MIXER_CHANNEL 3
 
 class Sound{
     public:
@@ -24,6 +20,23 @@ class Sound{
         void set_volume(int volume);
 
         uint16_t current_volume;
+
+
+
+
+        //looper stuff
+        void startPlaying();
+        void continuePlaying();
+        void stopPlaying();
+
+        void startRecording();
+        void continueRecording();
+        void stopRecording();
+
+        void looper_loop();
+        int loopermode = 0;
+        File frec;
+
 };
 
 #endif

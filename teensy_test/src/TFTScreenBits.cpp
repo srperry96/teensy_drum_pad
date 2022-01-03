@@ -52,5 +52,5 @@ void TFTScreen::cover_letter_with_rectangle(uint8_t x, uint8_t y){
 }
 
 void TFTScreen::cover_line_end(uint8_t x, uint8_t y){
-    tft.fillRect(x, y, 200, 18, bg_color);
+    tft.fillRect(x, y, ILI9341_TFTHEIGHT, 18, bg_color);
 }

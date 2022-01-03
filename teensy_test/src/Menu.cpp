@@ -1,5 +1,6 @@
 #include "Menu.h"
 #include "SharedBits.h"
+#include "AudioBits.h"
 
 //use 'screen' to do all the tft screen stuff - included from SharedBits.h
 
@@ -377,23 +378,6 @@ void Menu::step_sequencer_mode(){
     screen.print_text("step seq mode to be added", 0, 0);
 }
 
-void Menu::looper_mode(){
-    mode = MENU_MODE_LOOPER;
-    screen.clear();
-    screen.print_text("looper mode. hold to record", 0, 0);
-
-    //attach new callback to keypad
-    for(int i = 0; i < NEO_TRELLIS_NUM_KEYS; i++){
-        neo.trellis.unregisterCallback(i);
-        neo.trellis.registerCallback(i, navigation_callback);
-        neo.trellis.pixels.setPixelColor(i, 0, 0, 0);
-    }
-
-    neo.trellis.pixels.setPixelColor(0, BTN_DIM, 0, 0);
-    neo.trellis.pixels.setPixelColor(1, 0, 0, BTN_DIM);
-
-    neo.trellis.pixels.show();
-}
 
 
 TrellisCallback looper_callback(keyEvent evt){
@@ -415,24 +399,72 @@ TrellisCallback looper_callback(keyEvent evt){
     neo.trellis.pixels.show();
 
 
-//now do stuff with the input (only when the button is pressed, not on release)
+//now do stuff with the input (only on press, not release)
     if(evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING){
-        menu.process_looper_input(evt.bit.NUM, SEESAW_KEYPAD_EDGE_RISING);
+        menu.process_looper_input(evt.bit.NUM, evt.bit.EDGE);
     }
 
     return 0;
 }
 
+
+
+void Menu::looper_mode(){
+    mode = MENU_MODE_LOOPER;
+
+    //attach new callback to keypad
+    for(int i = 0; i < NEO_TRELLIS_NUM_KEYS; i++){
+        neo.trellis.unregisterCallback(i);
+        neo.trellis.registerCallback(i, looper_callback);
+        neo.trellis.pixels.setPixelColor(i, 0, 0, 0);
+    }
+
+    neo.trellis.pixels.setPixelColor(0, BTN_DIM, 0, 0);
+    neo.trellis.pixels.setPixelColor(1, 0, 0, BTN_DIM);
+    neo.trellis.pixels.setPixelColor(2, 0, BTN_DIM, BTN_DIM);
+    neo.trellis.pixels.setPixelColor(3, BTN_DIM, 0, BTN_DIM);
+
+
+    neo.trellis.pixels.show();
+
+    //show the looper menu
+    screen.clear();
+    screen.print_text("Test recording", 10, 30);
+    screen.print_text("press 2 to record", 10, 60);
+    screen.print_text("press 3 to stop", 10, 90);
+    screen.print_text("press 4 to playback", 10, 120);
+}
+
+
+
+//LOOPER DEVELOPMENT CODE BELOW
+//0 is stop mode
+//1 is record mode
+//2 is play mode
+
 void Menu::process_looper_input(uint16_t key, uint8_t stroke){
     if(key == 0){
         menu.main_menu_mode();
         return;
+    //1 to record
     }else if(key == 1){
-        //TODO: WRITE THE LOOPER CODE. FIRST JOB IS TO TEST RECORDING TO SD CARD
-            
+            Serial.println("Record Button Press");
+            if (sound.loopermode == 2) sound.stopPlaying();
+            if (sound.loopermode == 0) sound.startRecording();
+
+    //2 to stop
+    }else if(key == 2){
+        Serial.println("Stop Button Press");
+        if (sound.loopermode == 1) sound.stopRecording();
+        if (sound.loopermode == 2) sound.stopPlaying();
+
+    //3 to playback
+    }else if(key == 3){
+        Serial.println("Play Button Press");
+        if (sound.loopermode == 1) sound.stopRecording();
+        if (sound.loopermode == 0) sound.startPlaying();
     }
 }
-
 
 
 
@@ -463,6 +495,18 @@ void Menu::drum_pad_mode(){
     screen.print_text("Big Beatz Machine", 60, 0);
     screen.print_text("--------------------------", 3, 20);
     screen.print_text("Hold any pad for main menu (>1.2s)", 20, 60);
+}
+
+void Menu::process_drum_pad_input(){
+    //check pad states, play corresponding sample if needed
+    for(uint8_t btn_count = 0; btn_count < 16; btn_count++){
+      if(neo.button_presses[btn_count] == 1){
+          sound.play_pad_sample(btn_count);
+
+        //reset the button state so we dont double play the sample
+        neo.button_presses[btn_count] = 0;
+      }
+    }
 }
 
 

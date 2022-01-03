@@ -7,7 +7,9 @@
 #include "SDCardBits.h"
 #include "Metronome.h"
 #include "Menu.h"
+#include "AudioBits.h"
 
+extern Sound sound;
 extern Neotrellis neo;
 extern TFTScreen screen;
 extern WaveGenerator wavegen;
