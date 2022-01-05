@@ -54,3 +54,47 @@ void TFTScreen::cover_letter_with_rectangle(uint8_t x, uint8_t y){
 void TFTScreen::cover_line_end(uint8_t x, uint8_t y){
     tft.fillRect(x, y, ILI9341_TFTHEIGHT, 18, bg_color);
 }
+
+void TFTScreen::draw_title(const char* text){
+    //draw title
+    print_text(text, get_start_x_for_centred_text(text), 0);
+
+    //draw the underline all the way across the screen
+    const uint8_t title_underline_y = 20;
+    tft.drawLine(0, title_underline_y, ILI9341_TFTHEIGHT, title_underline_y, text_color);
+}
+
+
+uint16_t TFTScreen::get_start_x_for_centred_text(const char* text){
+    const uint8_t letter_width = 12;
+
+    //calculation is: middle of screen - half length of title
+    uint16_t x_pos = (ILI9341_TFTHEIGHT / 2) - ((letter_width * strlen(text)) / 2);   
+    return x_pos;
+}
+
+
+
+void TFTScreen::draw_colored_pad(uint8_t x, uint8_t y, uint16_t color){
+    tft.fillRoundRect(x, y, 14, 14, 2, color);
+}
+
+
+void TFTScreen::draw_pot_icon(uint8_t x, uint8_t y, float percent_of_max){
+    const uint8_t radius = 8;
+    
+    //clear previous pot icon by covering it with background colour circle slightly larger than original
+    tft.fillCircle(x, y, radius + 1, bg_color);
+
+    tft.drawCircle(x, y, radius, pot_color);
+
+    
+    //convert percent of max into angle that will work with the trig (limit to range 40-320 deg, reverse the value)
+    float angleval = 320.0 - (percent_of_max * 280.0);
+
+    //calculate the line end point with some trig
+    int endx = x + int(radius * sin(radians(angleval)));
+    int endy = y + int(radius * cos(radians(angleval)));
+
+    tft.drawLine(x,y, endx, endy, pot_color);
+}

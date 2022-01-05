@@ -78,7 +78,7 @@ void WaveGenerator::set_freq(int note){
 
 void WaveGenerator::set_filter_freq(int freq){
     //* 10 after the map here limits resolution to 10Hz
-    int scaled = map(freq, 0, 1023, 4, 600) * 10;
+    int scaled = map(freq, 0, 1023, min_filter_freq / 10, max_filter_freq / 10) * 10;
 
     //update the value if it has changed
     if(scaled != low_pass_val){
@@ -88,7 +88,7 @@ void WaveGenerator::set_filter_freq(int freq){
 }
 
 void WaveGenerator::set_overdrive(int val){
-    int mapped_val = map(val, 0, 1023, 1, 50);
+    int mapped_val = map(val, 0, 1023, min_overdrive, max_overdrive);
 
     //update the value if it has changed
     if(mapped_val != overdrive_val){
@@ -100,7 +100,7 @@ void WaveGenerator::set_overdrive(int val){
 void WaveGenerator::set_osc2_detune(int detune){
     int scaled = map(detune, 0, 1023, 0, 100);
     float scaled2 = scaled / 100.0;
-    float detune_percent = 1.0 - (0.04 * scaled2);
+    float detune_percent = 1.0 - (max_detune * scaled2);
 
     osc2_freq = osc1_freq * detune_percent;
     osc2.frequency(osc2_freq);

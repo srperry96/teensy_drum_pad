@@ -1,0 +1,77 @@
+This requires various extra libraries to run. Took a while to figure it out when setting up the project on another laptop.
+- ILI9341_t3
+- Adafruit Seesaw
+- Teensy Audio
+- Adafruit NeoMatrix
+- SPI
+- Possibly some others I've forgotten
+
+
+Max 3 concurrent wav files as 4 starts glitching out
+
+ok bit rate seems to be 1411
+clap1 at 705 works (1411 / 2 i guess, so it accepts it?)
+some of the 705 samples not working - all 1411 so far ok i think
+
+From teensy documentation (in the design tool, wavplayer module):
+    Only 16 bit PCM, 44100 Hz WAV files are supported
+
+
+----------------
+Sceen:  ILI9341 driver chip
+        Product: https://thepihut.com/products/2-4-lcd-display-module-240x320
+        Arduino guide: https://www.waveshare.com/wiki/2.4inch_LCD_Module
+            https://www.pjrc.com/store/display_ili9341.html
+            Links to an optimised library for it: https://github.com/PaulStoffregen/ILI9341_t3
+                Have added this to the vscode project via platformio library browser
+==============
+Screen notes
+
+//Pins defined on the guide page for using teensy audio board together with the tft screen
+#define TFT_DC      20
+#define TFT_CS      21
+#define TFT_RST     255 //255 as reset pin is not used (connect to 3.3v)
+#define TFT_MOSI    7
+#define TFT_SCLK    14
+#define TFT_MISO    12
+
+
+Wiring
+Screen | Teensy | Colour
+------------------------
+VCC      Vin      purple
+GND      GND      white
+DIN      7        green
+CLK      14       orange
+CS       21       yellow
+DC       20       blue
+RST      3.3v     brown
+BL       --       --      Backlight       Removed as its unneeded when the screen is powered from Vin
+
+
+
+
+pot Pins
+// volume is on 15 = A1
+// mid top pot a14 = A14
+// mid bottom pot 17 = A3
+// bottom pot a10 = A10
+
+
+
+TODO
+    Add look up table for all the notes, rather than the maths way atm - save compute, more accurate etc
+
+    Add step sequencer functionality
+    Add some fancy(ish) graphics for the wave generator
+
+    Could probably do a 2 channel looper - adding LineIn guitar jack inputs too
+
+    Move the TrellisCallbacks into NeotrellisBits instead of Menu as it is getting quite bloated
+
+Started on the looper bits. 
+    Got a file recording and playing back using the microphone.
+    Mic noise caused by writing to SD card
+        Apparently this is fixed if you use a teensy 3.6 inbuilt SD card, so this could be a future development
+    Need to clean up the code for it a bit and add in overdubbing
+        Recording to 2 files, swapping back and forth each time between playing and recording.

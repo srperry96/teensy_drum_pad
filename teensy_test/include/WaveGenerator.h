@@ -52,6 +52,14 @@ class WaveGenerator
         //previous used for comparison so we dont constantly update the screen with the same information
         float prev_osc_vals[5] = {-1, -1, -1, -1, -1};
 
+
+        const uint8_t max_overdrive = 50;
+        const uint16_t max_filter_freq = 600;
+        const float max_detune = 0.04;
+
+        const uint8_t min_overdrive = 1;
+        const uint16_t min_filter_freq = 40;
+
 };
 
 

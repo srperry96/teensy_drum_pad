@@ -27,7 +27,7 @@ Menu::Menu(){}
 
 
 String main_menu_items[6] = {"Drum Pad", "Set Drum Pad Sounds", "Oscillator", "(Rec)Looper", "Step Sequencer", "Metronome"};
-String osc_menu_items[5] = {"Wave Shape", "Octave", "LP Filter", "Osc2 Detune", "Overdrive"};
+String osc_menu_items[5] = {"Wave Shape", "Octave -+", "LP Filter", "Osc2 Detune", "Overdrive"};
 
 
 
@@ -39,16 +39,14 @@ void Menu::main_menu_mode(){
     String temp;
     menu_length = sizeof(main_menu_items) / 16; // divide by 16 bits (size per string)
     screen.clear();
-
-    screen.print_text("MAIN MENU", 100, 0);
-    screen.print_text("--------------------------", 3, 20);
+    screen.draw_title("Main Menu");
 
     for(uint8_t i = 0; i < menu_length; i++){
         temp = main_menu_items[i];
         screen.print_text(temp.c_str(), 40, (i * 20) + 40);
     }
 
-    screen.print_text("Red = back to drum pad", 0, 200);
+    screen.print_text("Red = back to drum pad", 10, 220);
 
     //draw menu selection arrow
     screen.print_text(">", 10, (selection_id * 20) + 40);
@@ -131,12 +129,15 @@ void Menu::osc_mode(){
 
 void Menu::show_oscillator_menu(){
     screen.clear();
-    screen.print_text("Oscillator (2ch)", 70, 0);
-    screen.print_text("--------------------------", 3, 20);
+    screen.draw_title("Oscillator (2ch)");
     
     for(uint8_t i = 0; i < (sizeof(osc_menu_items) / 16); i++){
-        screen.print_text(osc_menu_items[i].c_str(), 20, (i * 20) + 40);
+        screen.print_text(osc_menu_items[i].c_str(), 30, (i * 20) + 40);
     }
+
+    screen.draw_colored_pad(5, 40, ILI9341_BLUE);
+    screen.draw_colored_pad(5, 60,ILI9341_YELLOW);
+
     show_osc_values();
 }
 
@@ -212,7 +213,7 @@ void Menu::process_oscillator_input(uint16_t key, uint8_t stroke){
 
 //draw values for oscillator params
 void Menu::show_osc_values(){
-    const uint16_t xpos = 160;
+    const uint16_t xpos = 165;
     char temp[16];
     
     if(wavegen.waveshape != wavegen.prev_osc_vals[0]){
@@ -254,6 +255,9 @@ void Menu::show_osc_values(){
         screen.print_text(temp, xpos, 80);
 
         wavegen.prev_osc_vals[2] = wavegen.low_pass_val;
+
+        //draw the dial
+        screen.draw_pot_icon(12, 87, ((float)wavegen.low_pass_val - (float)wavegen.min_filter_freq) / ((float)wavegen.max_filter_freq - (float)wavegen.min_filter_freq) );
     }
 
     if(wavegen.detune_val != wavegen.prev_osc_vals[3]){
@@ -262,6 +266,9 @@ void Menu::show_osc_values(){
         screen.print_text(temp, xpos, 100);
 
         wavegen.prev_osc_vals[3] = wavegen.detune_val;
+
+        //draw the dial
+        screen.draw_pot_icon(12, 107, (1.0 - wavegen.detune_val) / wavegen.max_detune );
     }
 
     if(wavegen.overdrive_val != wavegen.prev_osc_vals[4]){
@@ -270,8 +277,10 @@ void Menu::show_osc_values(){
         screen.print_text(temp, xpos, 120);
 
         wavegen.prev_osc_vals[4] = wavegen.overdrive_val;
-    }
 
+        //draw the dial
+        screen.draw_pot_icon(12, 127, ((float)wavegen.overdrive_val - (float)wavegen.min_overdrive) / ((float)wavegen.max_overdrive - (float)wavegen.min_overdrive) );
+    }
 }
 
 
@@ -492,9 +501,10 @@ void Menu::drum_pad_mode(){
 
     //show drum pad screen
     screen.clear();
-    screen.print_text("Big Beatz Machine", 60, 0);
-    screen.print_text("--------------------------", 3, 20);
-    screen.print_text("Hold any pad for main menu (>1.2s)", 20, 60);
+    screen.draw_title("Big Beatz Machine");
+    screen.print_text("Play drums using the pads", 8, 40);
+    screen.print_text("Hold any pad to show the", 15, 100);
+    screen.print_text("main menu (>1.2s)", 50, 120);
 }
 
 void Menu::process_drum_pad_input(){
