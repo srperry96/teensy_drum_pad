@@ -124,6 +124,9 @@ void Menu::osc_mode(){
     }
 
     show_oscillator_menu();
+
+    //enable the oscillator - envelope means they can be active without playing constantly
+    wavegen.enable();
 }
 
 
@@ -145,28 +148,19 @@ void Menu::show_oscillator_menu(){
 void Menu::process_oscillator_input(uint16_t key, uint8_t stroke){
     //Return to main menu, stopping oscillator
     if(key == 0){
-        //if oscillators are playing, stop them
-        if(wavegen.wave_playing){
-            wavegen.stop_osc1();
-            wavegen.stop_osc2();
-            wavegen.wave_playing = false;
-        }
+        // //if oscillators are playing, stop them
+        // if(wavegen.wave_playing){
+        //     wavegen.wave_playing = false;
+        //     wavegen.disable();
+        // }
+        wavegen.disable();
+
         menu.main_menu_mode();
         return;
     
     //Cycle through the wave shape options
     }else if((key == 1) && (stroke == SEESAW_KEYPAD_EDGE_RISING)){
-        //increment waveshape ID, ensuring we stay within the limits of the list of waveshapes
-        wavegen.waveshape++;
-        if(wavegen.waveshape > wavegen.num_waveshapes - 1){
-            wavegen.waveshape = 0;
-        }
-        
-        //if oscillator is playing, we must restart it for the change to take effect
-        if(wavegen.wave_playing){
-            wavegen.start_osc1();
-            wavegen.start_osc2();
-        }
+        wavegen.change_waveshape();
 
     //Octave down - limit of octave 0 for obvious reasons
     }else if((key == 2) && (stroke == SEESAW_KEYPAD_EDGE_RISING)){
@@ -184,25 +178,15 @@ void Menu::process_oscillator_input(uint16_t key, uint8_t stroke){
     }else if(key >= 4){
         //if the key is pushed, we want a note to play
         if(stroke == SEESAW_KEYPAD_EDGE_RISING){
-            if(!wavegen.wave_playing){
-                wavegen.start_osc1();
-                wavegen.start_osc2();
-                wavegen.wave_playing = true;
-            }
-            wavegen.play_pad_note(key);
-        
-        //else if the key is being released, we want to stop playing? STILL UNDECIDED
+            //set the note frequency
+            wavegen.set_note_freq(key);
+
+            wavegen.begin_note();
+        //else if the key is being released, use the envelope to stop playing
         }else{
-//COMMENT OUT THE BELOW FEW LINES TO MAKE THE OSCILLATORS TURN OFF WHEN THE KEY IS RELEASED (RESULTS IN A LOT OF CRACKLING SOUNDS)
-//--- to make this work properly, would need to keep track of the note thats playing. If that note is the key that is released, then we stop. 
-//                                                                                    Otherwise continue playing, as a new note has been pressed.
-//ie:
-    //if osc1 freq == CORRESPONDING FREQUENCY FOR THAT BUTTON{stop oscillators}; else do nothing;
-    //this will not work for frequencies in different octaves. easiest way will probably be doable once we have a lookup table for all the notes C0 through C7
-       
-            // wavegen.stop_osc1();
-            // wavegen.stop_osc2();
-            // wavegen.wave_playing = false;
+            if(key == wavegen.current_key){
+                wavegen.end_note();
+            }
         }
     }
 

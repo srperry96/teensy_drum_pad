@@ -78,11 +78,7 @@ void loop() {
 
     //update potentiometer values for oscillator if we're in that mode
     if(menu.mode == MENU_MODE_OSCILLATOR){
-      AudioNoInterrupts();
-      wavegen.set_filter_freq(pot2);
-      wavegen.set_osc2_detune(pot3);
-      wavegen.set_overdrive(pot4);
-      AudioInterrupts();
+      wavegen.update_effects(pot2, pot3, pot4);
     }
 
     pot_check_millis = 0;

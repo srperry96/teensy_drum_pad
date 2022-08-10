@@ -15,50 +15,18 @@
 #define A_SHARP_0 10
 #define B_0 11
 
-#define FILT_CUT_LIMIT 10000
-
-#define FILT_Q_LIM_HIGH 0.7
-#define FILT_Q_LIM_LOW 5 //limits between 0.7 and 5
-
 WaveGenerator wavegen;
 
 
 WaveGenerator::WaveGenerator(){
     //set distortion limiter
     osc_dist_limiter.gain(0.4);
+
+    //set up the envelope for oscillator 1/2
+    osc_envelope1.attack(40);
+    osc_envelope1.release(200);
 }
 
-void WaveGenerator::start_osc1(){
-    osc1.amplitude(0.4);
-    osc1.frequency(osc1_freq);
-
-    //our wave shape list doesnt include all options. remaps 4 to be 6 here to include reverse sawtooth
-    if(waveshape == 4){
-        osc1.begin(6);
-    }else{
-        osc1.begin(waveshape);
-    }
-
-}
-
-void WaveGenerator::start_osc2(){
-    osc2.amplitude(0.4);
-    osc2.frequency(osc2_freq);
-    
-    if(waveshape == 4){
-        osc2.begin(6);
-    }else{
-        osc2.begin(waveshape);
-    }    
-}
-
-void WaveGenerator::stop_osc1(){
-    osc1.amplitude(0);
-}
-
-void WaveGenerator::stop_osc2(){
-    osc2.amplitude(0);
-}
 
 void WaveGenerator::set_freq(int note){
     float freq_new = note_freqs[note];
@@ -108,7 +76,8 @@ void WaveGenerator::set_osc2_detune(int detune){
     detune_val = detune_percent;
 }
 
-void WaveGenerator::play_pad_note(int btn){
+void WaveGenerator::set_note_freq(uint16_t btn){
+    current_key = btn;
 
     switch(btn){
         case 12:    set_freq(C_0);
@@ -126,8 +95,7 @@ void WaveGenerator::play_pad_note(int btn){
         case 10:    set_freq(F_SHARP_0);
                     break;
         case 11:    set_freq(G_0);
-                    break;    
-
+                    break;
         case 4:     set_freq(G_SHARP_0);
                     break;
         case 5:     set_freq(A_0);
@@ -137,4 +105,62 @@ void WaveGenerator::play_pad_note(int btn){
         case 7:     set_freq(B_0);
                     break;
     }
+}
+
+void WaveGenerator::begin_note(){
+    //if oscillator isnt currently playing, use the envelope to begin the note
+    if(!wave_playing){
+        osc_envelope1.noteOn();
+        wave_playing = true;
+    }   
+}
+
+void WaveGenerator::end_note(){
+    osc_envelope1.noteOff();
+    wave_playing = false;
+    current_key = 0;
+}
+
+void WaveGenerator::enable(){
+    osc1.amplitude(0.4);
+    osc1.frequency(osc1_freq);
+
+    //our wave shape list doesnt use all possible shapes. this remaps 4 to 6 here to include reverse sawtooth
+    if(waveshape == 4){
+        osc1.begin(6);
+    }else{
+        osc1.begin(waveshape);
+    }
+
+    osc2.amplitude(0.4);
+    osc2.frequency(osc2_freq);
+    
+    if(waveshape == 4){
+        osc2.begin(6);
+    }else{
+        osc2.begin(waveshape);
+    }
+}
+
+void WaveGenerator::disable(){
+    osc1.amplitude(0);
+    osc2.amplitude(0);
+}
+
+void WaveGenerator::update_effects(int filter_val, int detune_val, int overdrive_val){
+    AudioNoInterrupts();
+    set_filter_freq(filter_val);
+    set_osc2_detune(detune_val);
+    set_overdrive(overdrive_val);
+    AudioInterrupts();
+}
+
+void WaveGenerator::change_waveshape(){
+    //increment waveshape ID, ensuring we stay within the limits of the list of waveshapes
+    waveshape++;
+    if(waveshape > num_waveshapes - 1){
+        waveshape = 0;
+    }
+    //restart the oscillator so the change of waveform takes effect
+    enable();
 }

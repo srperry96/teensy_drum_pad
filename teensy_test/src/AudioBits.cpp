@@ -55,7 +55,7 @@ AudioFilterStateVariable osc_filter1;
 AudioConnection osc1_to_mixer_osc(osc1, 0, mixer_osc, 0);
 AudioConnection osc2_to_mixer_osc(osc2, 0, mixer_osc, 1);
 
-//Distortion (overdrive) into
+//Distortion (overdrive) for wavegen
 AudioAmplifier osc_dist;
 AudioAmplifier osc_dist_limiter;
 AudioConnection mixer_osc_to_dist(mixer_osc, 0, osc_dist, 0);
@@ -63,12 +63,16 @@ AudioConnection mixer_osc_to_dist2(osc_dist, 0, osc_dist_limiter, 0);
 AudioConnection mixer_osc_to_filter(osc_dist_limiter, 0, osc_filter1, 0);
 
 
-//output mixer connections
-AudioConnection wavs1_to_mixer_out(    mixer_wav1,  0, mixer_out, 0); //wav samples 1 and 2 to output
-AudioConnection wavs2_to_mixer_out(    mixer_wav2,  0, mixer_out, 1); //wav samples 3 and metronome to output
-AudioConnection wavegen_to_mixer_out(  osc_filter1, 0, mixer_out, 2); //wave generator to output
-// AudioConnection mic_to_mixer_out(      mic_in,      0, mixer_out, MIC_MIXER_CHANNEL); //microphone straight to output atm
+//envelope for wavegen
+AudioEffectEnvelope osc_envelope1;
+AudioConnection     osc_filter_to_envelope1(osc_filter1, 0, osc_envelope1, 0);
 
+
+
+//output mixer connections
+AudioConnection wavs1_to_mixer_out(  mixer_wav1,    0, mixer_out, 0); //wav samples 1 and 2 to output
+AudioConnection wavs2_to_mixer_out(  mixer_wav2,    0, mixer_out, 1); //wav samples 3 and metronome to output
+AudioConnection wavegen_to_mixer_out(osc_envelope1, 0, mixer_out, 2);
 
 //same signal sent to left and right (= mono audio out)
 AudioConnection headphones_out_L(mixer_out, 0, headphones, 0);
@@ -85,12 +89,16 @@ AudioMixer4           mixer_loop;
 
 AudioConnection          playrawR_to_mixerloop(playRaw1, 0, mixer_loop, 0);
 AudioConnection          playrawL_to_mixerloop(playRaw1, 0, mixer_loop, 1);
-AudioConnection           mic_to_mixer_loop(mic_in, 0, mixer_loop, 2);
+AudioConnection          mic_to_mixer_loop(mic_in, 0, mixer_loop, 2);
 
 //mixer loop to output mixer channel 3
 AudioConnection mixer_loop_to_mixer_out(mixer_loop, 0, mixer_out, 3);
 
-// Create an object to control the audio shield.
+
+
+
+
+//Teensy Audio Shield Controller
 AudioControlSGTL5000 audioShield;
 
 Sound sound;
