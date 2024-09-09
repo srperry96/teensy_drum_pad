@@ -34,8 +34,6 @@ void TFTScreen::update(){
         case MENU_MODE_METRONOME        :   
                                             break;
     }
-
-
 }
 
 void TFTScreen::clear(){
@@ -85,10 +83,8 @@ void TFTScreen::draw_pot_icon(uint8_t x, uint8_t y, float percent_of_max){
     
     //clear previous pot icon by covering it with background colour circle slightly larger than original
     tft.fillCircle(x, y, radius + 1, bg_color);
-
     tft.drawCircle(x, y, radius, pot_color);
 
-    
     //convert percent of max into angle that will work with the trig (limit to range 40-320 deg, reverse the value)
     float angleval = 320.0 - (percent_of_max * 280.0);
 

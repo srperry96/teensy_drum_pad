@@ -33,8 +33,6 @@ class TFTScreen{
         uint16_t bg_color = ILI9341_BLACK;
         uint16_t text_color = ILI9341_GREEN;
         uint16_t pot_color = ILI9341_WHITE;
-
-
 };
 
 #endif

@@ -186,16 +186,20 @@ void Sound::update_volume(uint16_t new_vol){
 
 //LOOPER BITS BELOW
 
-void Sound::startPlaying() {
-  Serial.println("startPlaying");
-  playRaw1.play("RECORD.RAW");
-  loopermode = 2;
+void Sound::startPlaying(){
+  if(rec_track_num == 1){
+    Serial.println("startPlaying 0");
+    playRaw1.play("RECORD0.RAW");
+    // loopermode = 2;
+  }else{
+    Serial.println("startPlaying 1");
+    playRaw1.play("RECORD1.RAW");
+    // loopermode = 2;
+  }
 }
 
 void Sound::continuePlaying() {
   if (!playRaw1.isPlaying()) {
-    // playRaw1.stop();
-    // loopermode = 0;
     Serial.println("Finished.Should loop now");
     startPlaying();
   }
@@ -209,15 +213,23 @@ void Sound::stopPlaying() {
 
 
 void Sound::startRecording() {
-  Serial.println("startRecording");
+  char filename[12];
+  if(rec_track_num == 0){
+    strcpy(filename, "RECORD0.RAW");
+    Serial.println("startRecording 0");
+  }else{
+    strcpy(filename, "RECORD1.RAW");
+    Serial.println("startRecording 1");
+  }
+
   mixer_loop.gain(2, 0.5);
-  if (SD.exists("RECORD.RAW")) {
+  if (SD.exists(filename)) {
     // The SD library writes new data to the end of the
     // file, so to start a new recording, the old file
     // must be deleted before new data is written.
-    SD.remove("RECORD.RAW");
+    SD.remove(filename);
   }
-  frec = SD.open("RECORD.RAW", FILE_WRITE);
+  frec = SD.open(filename, FILE_WRITE);
   if (frec) {
     queue1.begin();
     loopermode = 1;

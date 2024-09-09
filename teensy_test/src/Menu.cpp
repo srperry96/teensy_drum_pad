@@ -431,37 +431,67 @@ void Menu::looper_mode(){
 
 
 //LOOPER DEVELOPMENT CODE BELOW
-//0 is stop mode
-//1 is record mode
+//0 is stop
+//1 is record/overdub mode
 //2 is play mode
 
 void Menu::process_looper_input(uint16_t key, uint8_t stroke){
+//     if(key == 0){
+//         menu.main_menu_mode();
+//         return;
+//     //1 to record
+//     }else if(key == 1){
+//             Serial.println("Record Button Press");
+//             if (sound.loopermode == 0) sound.startRecording();
+
+//             if (sound.loopermode == 2) sound.stopPlaying();
+
+//     //2 to stop
+//     }else if(key == 2){
+//         Serial.println("Stop Button Press");
+//         if (sound.loopermode == 1){
+//             sound.stopRecording();
+//             sound.rec_track_num = 1;
+//         }
+//         if (sound.loopermode == 2) sound.stopPlaying();
+
+//     //3 to playback
+//     }else if(key == 3){
+//         Serial.println("Play Button Press");
+//         if (sound.loopermode == 1) sound.stopRecording();
+//         if (sound.loopermode == 0) sound.startPlaying();
+//     }
+// }
+
     if(key == 0){
         menu.main_menu_mode();
         return;
-    //1 to record
     }else if(key == 1){
-            Serial.println("Record Button Press");
-            if (sound.loopermode == 2) sound.stopPlaying();
-            if (sound.loopermode == 0) sound.startRecording();
-
-    //2 to stop
+        Serial.println("Record Button Press");
+        
+        //stop current recording, so we can start the next one
+        sound.stopRecording();
+        
+        if(sound.rec_track_num == 0){
+            sound.rec_track_num = 1;
+        }else{
+            sound.rec_track_num = 0;
+        }
+        
+        sound.startPlaying();
+        sound.startRecording();
+    
     }else if(key == 2){
         Serial.println("Stop Button Press");
-        if (sound.loopermode == 1) sound.stopRecording();
-        if (sound.loopermode == 2) sound.stopPlaying();
-
-    //3 to playback
+        sound.stopRecording();
+        sound.stopPlaying();
     }else if(key == 3){
         Serial.println("Play Button Press");
-        if (sound.loopermode == 1) sound.stopRecording();
-        if (sound.loopermode == 0) sound.startPlaying();
+        sound.startPlaying();
     }
+
+
 }
-
-
-
-
 
 
 

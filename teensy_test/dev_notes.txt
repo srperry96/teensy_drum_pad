@@ -75,3 +75,9 @@ Started on the looper bits.
         Apparently this is fixed if you use a teensy 3.6 inbuilt SD card, so this could be a future development
     Need to clean up the code for it a bit and add in overdubbing
         Recording to 2 files, swapping back and forth each time between playing and recording.
+
+
+
+
+BROKE THE LOOPER STUFF - NOT SURE YOU CAN READ AND WRITE TO THE SD CARD AT THE SAME TIME.
+    SOUND WAS FREAKING OUT -- INVESTIGATE FURTHER

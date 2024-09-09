@@ -37,6 +37,8 @@ class Sound{
         int loopermode = 0;
         File frec;
 
+        uint8_t rec_track_num = 0;
+
 };
 
 #endif
