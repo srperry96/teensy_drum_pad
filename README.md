@@ -1,5 +1,7 @@
-# Teensy Drum Pad (Development Repo)
+# Teensy Drum Pad
 Development repo for a teensy (+ audio board) based synthesizer and drum pad.
+
+Demo video here: https://www.youtube.com/watch?v=pE9f0ItpdG8
 
 ![Teensy Drum Pad Full View](/Docs/drumpad_pic1.jpg)
 
