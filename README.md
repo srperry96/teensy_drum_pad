@@ -1,12 +1,12 @@
 # Teensy Drum Pad
-Development repo for a teensy (+ audio board) based synthesizer and drum pad.
+Development repo for a Teensy 3.2 (+ audio board) based synthesizer and drum pad.
 
 Demo video here: https://www.youtube.com/watch?v=pE9f0ItpdG8
 
 ![Teensy Drum Pad Full View](/Docs/drumpad_pic1.jpg)
 
 ## Hardware
-- Teensy + Audio Board
+- Teensy 3.2 + Audio Board
 - Adafruit Neotrellis
 - 2.4" TFT LCD Screen (ILI9341)
 - 4 x Potentiometers
