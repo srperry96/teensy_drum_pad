@@ -1,5 +1,7 @@
 # Teensy Drum Pad
-Development repo for a Teensy 3.2 (+ audio board) based synthesizer and drum pad.
+NOTE: Development on this project stopped a while ago. Drum (WAV sample player) and Oscillator code is implemented. The rest is not. Code needs a lot of refactoring...
+
+## Development repo for a Teensy 3.2 (+ audio board) based synthesizer and drum pad.
 
 Demo video here: https://www.youtube.com/watch?v=pE9f0ItpdG8
 
